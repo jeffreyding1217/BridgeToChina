@@ -123,7 +123,12 @@
     },
   };
 
-  if (!isConfigured) document.getElementById('setupNote').style.display = 'block';
+  if (!isConfigured) {
+    const n = document.getElementById('setupNote');
+    n.style.display = 'block';
+    n.innerHTML = '<b>Not connected yet:</b> ';
+    n.appendChild(document.createTextNode(configProblem));
+  }
 
   function applyCopy(){
     const c = COPY[role];

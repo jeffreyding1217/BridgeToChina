@@ -9,6 +9,9 @@ Upload every file in this folder to your web host, all in the same folder. `inde
 3. SQL Editor → New query → paste the ENTIRE contents of `supabase-schema.sql` → Run.
    (This creates the tables, the private voice-recordings storage bucket, and the security
    guards that stop volunteers from approving themselves. Don't skip the guards.)
+3b. If you already ran the schema earlier and sign-up shows 'row-level security policy' errors, run
+   `supabase-fix-signup.sql` once the same way (SQL Editor → paste → Run). New projects don't need it —
+   it's already included at the bottom of `supabase-schema.sql`.
 4. Authentication → Providers → Email → keep **Confirm email ON** if you want real email
    verification (recommended — the application requires it). While testing you can turn it off.
    Authentication → URL Configuration → set Site URL to your website's address so the

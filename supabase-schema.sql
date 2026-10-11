@@ -388,3 +388,44 @@ end $$;
 drop trigger if exists student_applications_guard on student_applications;
 create trigger student_applications_guard before insert or update on student_applications
   for each row execute function guard_student_changes();
+
+-- ----------------------------------------------------------------------
+-- SIGN-UP TRIGGER: creates the profile + application when an account is created
+-- ----------------------------------------------------------------------
+
+create or replace function handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  r text;
+  n text;
+  first_n text;
+  last_n text;
+begin
+  r := coalesce(new.raw_user_meta_data->>'role', 'volunteer');
+  if r not in ('volunteer', 'student') then r := 'volunteer'; end if;
+
+  n := coalesce(nullif(trim(new.raw_user_meta_data->>'full_name'), ''), split_part(new.email, '@', 1));
+  first_n := split_part(n, ' ', 1);
+  last_n := nullif(trim(substr(n, length(first_n) + 1)), '');
+
+  insert into public.profiles (id, full_name, role)
+  values (new.id, n, r)
+  on conflict (id) do nothing;
+
+  if r = 'student' then
+    insert into public.student_applications (id, first_name, last_name)
+    values (new.id, first_n, last_n)
+    on conflict (id) do nothing;
+  else
+    insert into public.applications (id, first_name, last_name)
+    values (new.id, first_n, last_n)
+    on conflict (id) do nothing;
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();

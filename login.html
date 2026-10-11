@@ -182,26 +182,28 @@
     try {
       if (mode === 'signup') {
         const fullName = document.getElementById('nameInput').value.trim();
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        // The role + name travel with the account; a database trigger (supabase-fix-signup.sql)
+        // creates the profile and application rows, so this works even before email is confirmed.
+        const { data, error } = await supabaseClient.auth.signUp({
+          email, password, options: { data: { full_name: fullName, role } },
+        });
         if (error) throw error;
 
-        if (data.user) {
-          const { error: pErr } = await supabaseClient.from('profiles').insert({ id: data.user.id, full_name: fullName, role });
-          if (pErr && !String(pErr.message).includes('duplicate')) throw pErr;
+        // Safety net for projects where the trigger isn't installed yet: only possible
+        // when a session exists. Duplicate/denied errors are ignored on purpose.
+        if (data.user && data.session) {
           const parts = fullName.split(' ');
           const table = role === 'student' ? 'student_applications' : 'applications';
-          await supabaseClient.from(table).insert({
-            id: data.user.id, status: 'account_created',
-            first_name: parts[0] || '', last_name: parts.slice(1).join(' '),
-          });
+          await supabaseClient.from('profiles').insert({ id: data.user.id, full_name: fullName, role });
+          await supabaseClient.from(table).insert({ id: data.user.id, status: 'account_created', first_name: parts[0] || '', last_name: parts.slice(1).join(' ') });
         }
         if (data.session) {
           window.location.href = dest(role, true);
         } else {
+          setMode('login'); // switch to the login view first (this clears messages)...
           showMsg(role === 'student'
             ? 'Account created! Check your email and click the verification link, then log in. 账号已创建！请查收邮件并点击验证链接，然后登录。'
             : 'Account created! Check your email and click the verification link, then log in.', 'success');
-          setMode('login');
         }
       } else {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });

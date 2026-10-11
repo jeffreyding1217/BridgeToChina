@@ -21,8 +21,8 @@
    you only ever update your keys in one place.
    ====================================================================== */
 
-const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";      // e.g. "https://abcdxyz.supabase.co"
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";     // the long "anon public" key
+const SUPABASE_URL = "https://tihgzwxgplfbmquwwhra.supabase.co/rest/v1";      // e.g. "https://abcdxyz.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpaGd6d3hncGxmYm1xdXd3aHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1ODY3NzEsImV4cCI6MjEwNzE2Mjc3MX0.0XPrDvw_wfB4mJ-b-SPAaUqazJYVm555pUQykuDDgy4";     // the long "anon public" key
 
 // ---- Checks the two values above and explains exactly what's wrong, if anything ----
 function diagnoseConfig() {

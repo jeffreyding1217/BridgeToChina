@@ -323,7 +323,7 @@
 
     if (step === 'verify') {
       document.getElementById('resendBtn').onclick = async () => {
-        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email });
+        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email, options: { emailRedirectTo: pageUrl('confirmed.html') } });
         showMsg('verifyMsg', error ? error.message : 'Sent again — check your inbox. 已重新发送，请查收。', error ? 'error' : 'success');
       };
       document.getElementById('verifiedBtn').onclick = async () => {

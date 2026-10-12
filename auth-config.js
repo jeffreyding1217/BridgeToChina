@@ -15,6 +15,14 @@
 const SUPABASE_URL = "https://tihgzwxgplfbmquwwhra.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpaGd6d3hncGxmYm1xdXd3aHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1ODY3NzEsImV4cCI6MjEwNzE2Mjc3MX0.0XPrDvw_wfB4mJ-b-SPAaUqazJYVm555pUQykuDDgy4";
 
+// Your website's address (where these pages live). Confirmation emails send people back here.
+// If you ever rename the GitHub repository or move hosts, change this one line.
+const SITE_URL = "https://jeffreyding1217.github.io/BridgeToChina/";
+function pageUrl(name) {
+  const base = SITE_URL ? SITE_URL.replace(/\/?$/, "/") : new URL(".", window.location.href).href;
+  return base + name;
+}
+
 // ---- Checks the two values above and explains exactly what's wrong, if anything ----
 function diagnoseConfig() {
   const u = String(SUPABASE_URL || "").trim();

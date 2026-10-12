@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Confirmed — Bridge to China</title>
+<script src="supabase.js"></script>
+<script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
+<style>
+  :root{ --blue:#1e4e8c; --blue-deep:#133761; --green:#1f8a5f; --green-deep:#146a48; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4; --tint:#f5faf8; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:var(--tint); color:var(--ink); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 20px 50px rgba(19,36,54,.1); padding:40px 34px; max-width:460px; width:100%; text-align:center; }
+  .logo{ display:flex; align-items:center; gap:10px; justify-content:center; font-family:Georgia,'Songti SC',serif; font-weight:700; font-size:1.2rem; color:var(--blue-deep); margin-bottom:26px; }
+  .mark{ width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--green)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.8rem; }
+  .big{ font-size:3rem; margin-bottom:6px; }
+  h1{ font-family:Georgia,'Songti SC',serif; color:var(--blue-deep); font-size:1.5rem; margin:0 0 10px; }
+  p{ color:var(--ink-soft); line-height:1.65; font-size:.95rem; margin:0 0 14px; }
+  .btn{ display:inline-block; padding:13px 30px; border-radius:999px; background:var(--blue); color:#fff; font-weight:700; text-decoration:none; font-size:.95rem; margin-top:6px; }
+  .btn.ghost{ background:#fff; color:var(--blue); border:1.5px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><span class="mark">BC</span> Bridge to China</div>
+  <div id="out"><p>One moment… · 请稍候…</p></div>
+</div>
+<script src="auth-config.js"></script>
+<script>
+  const out = document.getElementById('out');
+  function show(icon, title, body, btnHref, btnText, ghost){
+    out.innerHTML = '<div class="big">'+icon+'</div><h1>'+title+'</h1>'+body+(btnHref ? '<a class="btn '+(ghost?'ghost':'')+'" href="'+btnHref+'">'+btnText+'</a>' : '');
+  }
+  async function run(){
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const qs = new URLSearchParams(location.search);
+    const errDesc = hash.get('error_description') || qs.get('error_description');
+    if (errDesc) {
+      show('⚠️', 'This link has expired or was already used · 链接已过期或已使用',
+        '<p>Don\'t worry — if you already confirmed once, just log in. If not, log in and we\'ll offer to send you a new confirmation email.</p><p>别担心——如果你之前已经验证过，直接登录即可。如果还没有，请登录，我们会提供重新发送验证邮件的选项。</p>',
+        'login.html', 'Go to Log In · 去登录');
+      return;
+    }
+    if (!isConfigured || !supabaseClient) {
+      show('⚙️', 'Almost there', '<p>The site is not connected to its database yet.</p>', 'index.html', 'Home', true); return;
+    }
+    // supabase-js reads the confirmation tokens from the link automatically and signs the person in.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    history.replaceState(null, '', location.pathname); // tidy the address bar
+    if (!session) {
+      show('✅', 'Your email is confirmed · 邮箱已验证',
+        '<p>Please log in to continue.</p><p>请登录后继续。</p>', 'login.html', 'Log In · 登录');
+      return;
+    }
+    let dest = 'application.html';
+    try {
+      const { data: prof } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+      if (prof && prof.role === 'student') dest = 'student-application.html';
+    } catch(e) {}
+    const student = dest.startsWith('student');
+    show('✅', 'Email confirmed! · 邮箱验证成功！',
+      '<p>Thank you — your email is verified and you are logged in. '+(student ? 'Next, finish your student registration.' : 'Next, continue your volunteer application.')+'</p><p>谢谢！你的邮箱已验证，并已登录。'+(student ? '下一步请完成学生注册。' : '下一步请继续完成志愿者申请。')+'</p>',
+      dest, student ? 'Continue registration · 继续注册' : 'Continue application');
+  }
+  run();
+</script>
+</body>
+</html>

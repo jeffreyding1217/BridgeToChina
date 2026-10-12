@@ -498,7 +498,7 @@
 
     if (step === 'verify') {
       document.getElementById('resendBtn').onclick = async () => {
-        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email });
+        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email, options: { emailRedirectTo: pageUrl('confirmed.html') } });
         const el = document.getElementById('verifyMsg');
         el.className = 'status-msg show ' + (error ? 'error' : 'success');
         el.textContent = error ? error.message : 'Verification email sent again — check your inbox.';

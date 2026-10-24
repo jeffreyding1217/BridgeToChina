@@ -77,6 +77,11 @@
   .badge-soon{ font-family:var(--font-mono); font-size:0.65rem; background:var(--bg-tint-2); color:var(--ink-soft); padding:3px 8px; border-radius:999px; margin-left:auto; }
 
   .setup-note{ font-size:0.85rem; color:#9a6b1a; background:#fdf1e0; border-radius:10px; padding:14px 16px; line-height:1.6; }
+  .field label.req::after{ content:" *"; color:#d93025; font-weight:800; }
+  .req-note{ font-size:.82rem; color:var(--ink-soft); margin:-8px 0 20px; } .req-note b{ color:#d93025; }
+  input.invalid, select.invalid, textarea.invalid{ border-color:#d93025 !important; background:#fff5f4 !important; }
+  .radio-row.invalid, .scale-row.invalid{ outline:2px solid #d93025; outline-offset:5px; border-radius:10px; }
+  .help.sc{ font-weight:600; }
 </style>
 </head>
 <body>
@@ -114,14 +119,23 @@
     if (prof && prof.role === 'student') { window.location.href = 'student-application.html'; return; }
     document.getElementById('whoEmail').textContent = session.user.email;
 
+    const meta = session.user.user_metadata || {};
+    if (!prof) {
+      // Accounts made before the sign-up trigger was installed have no profile row; create it.
+      await supabaseClient.from('profiles').insert({ id: s.user.id, full_name: meta.full_name || session.user.email, role: 'volunteer' });
+    }
     let { data: row } = await supabaseClient.from('applications').select('*').eq('id', session.user.id).single();
     if (!row) {
-      const { data: created } = await supabaseClient.from('applications')
-        .insert({ id: session.user.id, status: 'account_created' })
-        .select().single();
-      row = created;
+      const res = await supabaseClient.from('applications').insert({ id: session.user.id, status: 'account_created' }).select().single();
+      row = res.data;
+      if (!row) {
+        // Do NOT carry on pretending — answers would be lost. Say so clearly.
+        wrap.innerHTML = '<div class="card"><h1>We couldn\'t open your application</h1><p class="lead">Your account exists, but we could not create or load its application record, so anything you type would not be saved.</p><div class="status-msg show error" id="initErr"></div><p class="lead" style="margin-top:16px;">Please try reloading the page. If it keeps happening, the site owner needs to re-run <code>supabase-schema.sql</code> in Supabase, and you may need to sign up again with a fresh account.</p></div>';
+        document.getElementById('initErr').textContent = (res.error && res.error.message) || 'Unknown error';
+        return;
+      }
     }
-    app = row || { status: 'account_created' };
+    app = row;
 
     // Figure out which step to resume at, based on saved status.
     const statusToStep = {
@@ -152,8 +166,12 @@
     }
     const payload = { ...fields };
     if (finalStatus !== cur) payload.status = finalStatus;
-    const { error } = await supabaseClient.from('applications').update(payload).eq('id', session.user.id);
+    const { data: saved, error } = await supabaseClient.from('applications').update(payload).eq('id', session.user.id).select('id');
     if (error) { alert('Could not save: ' + error.message); return false; }
+    if (!saved || !saved.length) {
+      alert('We could not save your answers because your application record was not found. Please reload the page. If this keeps happening, log out and sign in again, or contact us.');
+      return false;
+    }
     app = { ...app, ...fields, status: finalStatus };
     return true;
   }
@@ -181,6 +199,10 @@
     else if (step === 'availability') body = availabilityStep();
 
     wrap.innerHTML = (step === 'welcome' || step === 'whatsnext') ? body : progressHTML() + body;
+    if (['profile','english_bg','chinese_bg','teaching','scenarios','availability'].includes(step)) {
+      const lead = wrap.querySelector('.card .lead');
+      if (lead) lead.insertAdjacentHTML('afterend', '<p class="req-note"><b>*</b> Required — every field must be completed before you can continue.</p>');
+    }
     wireStep(step);
   }
 
@@ -228,24 +250,24 @@
         <h1>Your Volunteer Profile</h1>
         <p class="lead">We ask for this so students and other volunteers know who you are, and so we can match you with the right time zone and students.</p>
         <div class="two-col">
-          <div class="field"><label>First Name</label><input type="text" id="f_first_name" value="${v('first_name')}"></div>
-          <div class="field"><label>Last Name</label><input type="text" id="f_last_name" value="${v('last_name')}"></div>
+          <div class="field"><label class="req">First Name</label><input type="text" id="f_first_name" value="${v('first_name')}"></div>
+          <div class="field"><label class="req">Last Name</label><input type="text" id="f_last_name" value="${v('last_name')}"></div>
         </div>
-        <div class="field"><label>Preferred Name</label><input type="text" id="f_preferred_name" value="${v('preferred_name')}"><div class="help">What should students call you?</div></div>
+        <div class="field"><label class="req">Preferred Name</label><input type="text" id="f_preferred_name" value="${v('preferred_name')}"><div class="help">What should students call you?</div></div>
         <div class="two-col">
-          <div class="field"><label>Country</label><input type="text" id="f_country" value="${v('country')}"></div>
-          <div class="field"><label>City / Region</label><input type="text" id="f_city_region" value="${v('city_region')}"></div>
-        </div>
-        <div class="two-col">
-          <div class="field"><label>Time Zone</label><input type="text" id="f_timezone" placeholder="e.g. GMT-4" value="${v('timezone')}"><div class="help">Used to match your availability with students.</div></div>
-          <div class="field"><label>Date of Birth</label><input type="date" id="f_dob" value="${v('date_of_birth')}"><div class="help">Volunteers must be 18+.</div></div>
+          <div class="field"><label class="req">Country</label><input type="text" id="f_country" value="${v('country')}"></div>
+          <div class="field"><label class="req">City / Region</label><input type="text" id="f_city_region" value="${v('city_region')}"></div>
         </div>
         <div class="two-col">
-          <div class="field"><label>Native Language</label><input type="text" id="f_native_language" value="${v('native_language')}"></div>
-          <div class="field"><label>Other Languages</label><input type="text" id="f_other_languages" value="${v('other_languages')}"></div>
+          <div class="field"><label class="req">Time Zone</label><input type="text" id="f_timezone" placeholder="e.g. GMT-4" value="${v('timezone')}"><div class="help">Used to match your availability with students.</div></div>
+          <div class="field"><label class="req">Date of Birth</label><input type="date" id="f_dob" value="${v('date_of_birth')}"><div class="help">Volunteers must be 18+.</div></div>
         </div>
-        <div class="field"><label>Current School / Work Status</label><input type="text" id="f_school_work" value="${v('school_work_status')}"></div>
-        <div class="field"><label>Short Biography</label><textarea id="f_bio">${v('bio')}</textarea><div class="help">Shown on your public volunteer profile once approved.</div></div>
+        <div class="two-col">
+          <div class="field"><label class="req">Native Language</label><input type="text" id="f_native_language" value="${v('native_language')}"></div>
+          <div class="field"><label class="req">Other Languages</label><input type="text" id="f_other_languages" placeholder="e.g. Spanish, French — or write None" value="${v('other_languages')}"></div>
+        </div>
+        <div class="field"><label class="req">Current School / Work Status</label><input type="text" id="f_school_work" value="${v('school_work_status')}"></div>
+        <div class="field"><label class="req">Short Biography</label><textarea id="f_bio" data-min="3" placeholder="Write at least 3 full sentences about yourself.">${v('bio')}</textarea><div class="help">Shown on your public volunteer profile once approved.</div></div>
         <div id="profileMsg" class="status-msg"></div>
         <div class="actions">
           <button class="btn btn-ghost" onclick="stepIndex=1; render();">Back</button>
@@ -271,13 +293,13 @@
       <div class="card">
         <h1>English Language Background</h1>
         <p class="lead">Your answers here are self-reported — we'll compare them against your assessment results later, so answer honestly rather than optimistically.</p>
-        <div class="field"><label>Is English your native language?</label>${yesNo('english_is_native', app.english_is_native)}</div>
-        <div class="field"><label>How many years have you used English?</label><input type="text" id="f_english_years" value="${app.english_years||''}"></div>
-        <div class="field"><label>Have you studied English formally?</label>${yesNo('english_formal_study', app.english_formal_study)}</div>
-        <div class="field"><label>Have you taught English before?</label>${yesNo('english_taught_before', app.english_taught_before)}</div>
-        <div class="field"><label>Have you lived in an English-speaking country?</label>${yesNo('english_lived_abroad', app.english_lived_abroad)}</div>
-        <div class="field"><label>How comfortable are you speaking English?</label>${comfortScale('english_speaking_comfort', app.english_speaking_comfort)}</div>
-        <div class="field"><label>How comfortable are you understanding spoken English?</label>${comfortScale('english_understanding_comfort', app.english_understanding_comfort)}</div>
+        <div class="field"><label class="req">Is English your native language?</label>${yesNo('english_is_native', app.english_is_native)}</div>
+        <div class="field"><label class="req">How many years have you used English?</label><input type="text" id="f_english_years" value="${app.english_years||''}"></div>
+        <div class="field"><label class="req">Have you studied English formally?</label>${yesNo('english_formal_study', app.english_formal_study)}</div>
+        <div class="field"><label class="req">Have you taught English before?</label>${yesNo('english_taught_before', app.english_taught_before)}</div>
+        <div class="field"><label class="req">Have you lived in an English-speaking country?</label>${yesNo('english_lived_abroad', app.english_lived_abroad)}</div>
+        <div class="field"><label class="req">How comfortable are you speaking English?</label>${comfortScale('english_speaking_comfort', app.english_speaking_comfort)}</div>
+        <div class="field"><label class="req">How comfortable are you understanding spoken English?</label>${comfortScale('english_understanding_comfort', app.english_understanding_comfort)}</div>
         <div id="engMsg" class="status-msg"></div>
         <div class="actions">
           <button class="btn btn-ghost" onclick="stepIndex=2; render();">Back</button>
@@ -291,14 +313,14 @@
       <div class="card">
         <h1>Chinese Language Background</h1>
         <p class="lead">This helps us understand how you'll connect with students outside of English practice — not every volunteer needs to speak Chinese well, but we ask everyone the same questions.</p>
-        <div class="field"><label>Which Chinese language(s) do you speak?</label><input type="text" id="f_chinese_languages" placeholder="e.g. Mandarin, Cantonese" value="${app.chinese_languages||''}"></div>
-        <div class="field"><label>How many years have you studied Chinese?</label><input type="text" id="f_chinese_years" value="${app.chinese_years||''}"></div>
-        <div class="field"><label>Where did you learn Chinese?</label><input type="text" id="f_chinese_where" value="${app.chinese_learned_where||''}"></div>
-        <div class="field"><label>Have you lived in a Chinese-speaking environment?</label>${yesNo('chinese_lived_immersion', app.chinese_lived_immersion)}</div>
-        <div class="field"><label>How comfortable are you speaking Chinese?</label>${comfortScale('chinese_speaking_comfort', app.chinese_speaking_comfort)}</div>
-        <div class="field"><label>How comfortable are you understanding spoken Chinese?</label>${comfortScale('chinese_understanding_comfort', app.chinese_understanding_comfort)}</div>
-        <div class="field"><label>Can you read Chinese characters?</label>${yesNo('chinese_can_read', app.chinese_can_read)}</div>
-        <div class="field"><label>Can you write Chinese characters?</label>${yesNo('chinese_can_write', app.chinese_can_write)}</div>
+        <div class="field"><label class="req">Which Chinese language(s) do you speak?</label><input type="text" id="f_chinese_languages" placeholder="e.g. Mandarin, Cantonese — or write None" value="${app.chinese_languages||''}"></div>
+        <div class="field"><label class="req">How many years have you studied Chinese?</label><input type="text" id="f_chinese_years" placeholder="e.g. 3 years — or write 0" value="${app.chinese_years||''}"></div>
+        <div class="field"><label class="req">Where did you learn Chinese?</label><input type="text" id="f_chinese_where" placeholder="e.g. University, tutor — or write None" value="${app.chinese_learned_where||''}"></div>
+        <div class="field"><label class="req">Have you lived in a Chinese-speaking environment?</label>${yesNo('chinese_lived_immersion', app.chinese_lived_immersion)}</div>
+        <div class="field"><label class="req">How comfortable are you speaking Chinese?</label>${comfortScale('chinese_speaking_comfort', app.chinese_speaking_comfort)}</div>
+        <div class="field"><label class="req">How comfortable are you understanding spoken Chinese?</label>${comfortScale('chinese_understanding_comfort', app.chinese_understanding_comfort)}</div>
+        <div class="field"><label class="req">Can you read Chinese characters?</label>${yesNo('chinese_can_read', app.chinese_can_read)}</div>
+        <div class="field"><label class="req">Can you write Chinese characters?</label>${yesNo('chinese_can_write', app.chinese_can_write)}</div>
         <div id="chiMsg" class="status-msg"></div>
         <div class="actions">
           <button class="btn btn-ghost" onclick="stepIndex=3; render();">Back</button>
@@ -312,16 +334,16 @@
       <div class="card">
         <h1>Teaching Experience</h1>
         <p class="lead">No experience? That's completely fine — you can still apply. We'll just make sure you get a bit of extra orientation.</p>
-        <div class="field"><label>Have you taught before (any subject)?</label>${yesNo('taught_before', app.taught_before)}</div>
-        <div class="field"><label>What subjects have you taught?</label><input type="text" id="f_teaching_subjects" value="${app.teaching_subjects||''}"></div>
-        <div class="field"><label>Have you taught English before?</label>${yesNo('taught_english_before', app.taught_english_before)}</div>
+        <div class="field"><label class="req">Have you taught before (any subject)?</label>${yesNo('taught_before', app.taught_before)}</div>
+        <div class="field"><label class="req">What subjects have you taught?</label><input type="text" id="f_teaching_subjects" placeholder="e.g. Math, English — or write None" value="${app.teaching_subjects||''}"></div>
+        <div class="field"><label class="req">Have you taught English before?</label>${yesNo('taught_english_before', app.taught_english_before)}</div>
         <div class="two-col">
-          <div class="field"><label>Roughly how many students have you worked with?</label><input type="text" id="f_student_count" value="${app.student_count_taught||''}"></div>
-          <div class="field"><label>What age groups have you taught?</label><input type="text" id="f_age_groups" value="${app.age_groups_taught||''}"></div>
+          <div class="field"><label class="req">Roughly how many students have you worked with?</label><input type="text" id="f_student_count" placeholder="e.g. 10 — or write 0" value="${app.student_count_taught||''}"></div>
+          <div class="field"><label class="req">What age groups have you taught?</label><input type="text" id="f_age_groups" placeholder="e.g. Teenagers — or write None" value="${app.age_groups_taught||''}"></div>
         </div>
-        <div class="field"><label>Have you taught online before?</label>${yesNo('taught_online_before', app.taught_online_before)}</div>
-        <div class="field"><label>Have you worked with students who speak another language?</label>${yesNo('taught_other_language_students', app.taught_other_language_students)}</div>
-        <div class="field"><label>Tell us about your teaching experience</label><textarea id="f_teaching_text">${app.teaching_experience_text||''}</textarea></div>
+        <div class="field"><label class="req">Have you taught online before?</label>${yesNo('taught_online_before', app.taught_online_before)}</div>
+        <div class="field"><label class="req">Have you worked with students who speak another language?</label>${yesNo('taught_other_language_students', app.taught_other_language_students)}</div>
+        <div class="field"><label class="req">Tell us about your teaching experience</label><textarea id="f_teaching_text" data-min="3" placeholder="Write at least 3 full sentences. If you have no experience, tell us why you want to teach and any related experience.">${app.teaching_experience_text||''}</textarea></div>
         <div id="teachMsg" class="status-msg"></div>
         <div class="actions">
           <button class="btn btn-ghost" onclick="stepIndex=4; render();">Back</button>
@@ -331,7 +353,7 @@
   }
 
   function scenariosStep(){
-    const q = (id,label,val) => `<div class="field"><label>${label}</label><textarea id="${id}">${val||''}</textarea></div>`;
+    const q = (id,label,val) => `<div class="field"><label class="req">${label}</label><textarea id="${id}" data-min="3" placeholder="Write at least 3 full sentences.">${val||''}</textarea></div>`;
     return `
       <div class="card">
         <h1>Working With Students</h1>
@@ -414,20 +436,20 @@
       <div class="card">
         <h1>Your Availability</h1>
         <p class="lead">We use this to match you with students in compatible time zones. You can adjust it later.</p>
-        <div class="field"><label>Days you're available</label>${multiPills('days',['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], v('avail_days'))}</div>
+        <div class="field"><label class="req">Days you're available</label>${multiPills('days',['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], v('avail_days'))}</div>
         <div class="two-col">
-          <div class="field"><label>Earliest start time</label><input type="time" id="f_start" value="${v('avail_start_time')}"><div class="help">In your own time zone (${v('timezone') || 'set in your profile'}).</div></div>
-          <div class="field"><label>Latest end time</label><input type="time" id="f_end" value="${v('avail_end_time')}"></div>
+          <div class="field"><label class="req">Earliest start time</label><input type="time" id="f_start" value="${v('avail_start_time')}"><div class="help">In your own time zone (${v('timezone') || 'set in your profile'}).</div></div>
+          <div class="field"><label class="req">Latest end time</label><input type="time" id="f_end" value="${v('avail_end_time')}"></div>
         </div>
         <div class="two-col">
-          <div class="field"><label>Preferred lesson length</label>
+          <div class="field"><label class="req">Preferred lesson length</label>
             <select id="f_len"><option ${v('preferred_lesson_length')==='30 minutes'?'selected':''}>30 minutes</option><option ${v('preferred_lesson_length')==='45 minutes'?'selected':''}>45 minutes</option><option ${v('preferred_lesson_length')==='60 minutes'?'selected':''}>60 minutes</option></select>
             <div class="help">Our standard lesson template is 30 minutes.</div></div>
-          <div class="field"><label>How many students can you teach?</label><input type="number" min="1" max="20" id="f_maxstu" value="${v('max_students')}"></div>
+          <div class="field"><label class="req">How many students can you teach?</label><input type="number" min="1" max="20" id="f_maxstu" value="${v('max_students')}"></div>
         </div>
-        <div class="field"><label>Maximum volunteer hours per week</label><input type="number" min="1" max="40" id="f_maxhrs" value="${v('max_weekly_hours')}"></div>
-        <div class="field"><label>Preferred student age groups</label>${multiPills('ages',['Children','Teens','University / adults','No preference'], v('preferred_age_groups'))}</div>
-        <div class="field"><label>Preferred student English levels</label>${multiPills('levels',['Beginner','Intermediate','Advanced','No preference'], v('preferred_student_levels'))}</div>
+        <div class="field"><label class="req">Maximum volunteer hours per week</label><input type="number" min="1" max="40" id="f_maxhrs" value="${v('max_weekly_hours')}"></div>
+        <div class="field"><label class="req">Preferred student age groups</label>${multiPills('ages',['Children','Teens','University / adults','No preference'], v('preferred_age_groups'))}</div>
+        <div class="field"><label class="req">Preferred student English levels</label>${multiPills('levels',['Beginner','Intermediate','Advanced','No preference'], v('preferred_student_levels'))}</div>
         <div id="availMsg" class="status-msg"></div>
         <div class="actions">
           <button class="btn btn-ghost" onclick="stepIndex=7; render();">Back to Checklist</button>
@@ -461,22 +483,58 @@
       return [...wrap.querySelectorAll(`.radio-pill.multi[data-multi="${group}"].selected`)].map(e=>e.dataset.val).join(', ');
     }
 
+    function ageOf(dob){ if(!dob) return null; const d=new Date(dob), n=new Date(); let a=n.getFullYear()-d.getFullYear(); const m=n.getMonth()-d.getMonth(); if(m<0||(m===0&&n.getDate()<d.getDate())) a--; return a; }
+    // A "sentence" = text ending in . ! ? 。！？ with at least 6 characters in it.
+    function sentenceCount(t){ return t.split(/[.!?。！？…]+/).map(x=>x.trim()).filter(x=>x.replace(/\s/g,'').length>=6).length; }
+    wrap.querySelectorAll('textarea[data-min]').forEach(t => {
+      const c = document.createElement('div'); c.className = 'help sc'; t.insertAdjacentElement('afterend', c);
+      const upd = () => { const n = sentenceCount(t.value.trim()); const need = +t.dataset.min; c.textContent = 'Sentences: ' + n + ' of ' + need + ' minimum'; c.style.color = n >= need ? '#146a48' : '#4a5c6b'; };
+      t.addEventListener('input', upd); upd();
+    });
+    function validate(msgId, checks){
+      wrap.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+      const problems = []; let first = null;
+      checks.forEach(c => {
+        let ok = true, el = null, extra = '';
+        if (c.id) {
+          el = document.getElementById(c.id); const v = el ? el.value.trim() : '';
+          if (!v) ok = false;
+          else if (c.sentences) { const n = sentenceCount(v); if (n < c.sentences) { ok = false; extra = ' (at least ' + c.sentences + ' full sentences — you have ' + n + ')'; } }
+        } else if (c.yn) { ok = yn(c.yn) !== null; const p = wrap.querySelector('[data-yn="' + c.yn + '"]'); el = p && p.parentElement; }
+        else if (c.scale) { ok = scale(c.scale) !== null; const p = wrap.querySelector('[data-scale="' + c.scale + '"]'); el = p && p.parentElement; }
+        else if (c.multi) { ok = !!multi(c.multi); const p = wrap.querySelector('[data-multi="' + c.multi + '"]'); el = p && p.parentElement; }
+        if (ok && c.test) { const r = c.test(); if (r) { ok = false; extra = ' (' + r + ')'; } }
+        if (!ok) { problems.push(c.label + extra); if (el) { el.classList.add('invalid'); if (!first) first = el; } }
+      });
+      if (problems.length) {
+        const m = document.getElementById(msgId); m.className = 'status-msg show error';
+        m.textContent = 'Please complete the fields marked with a red * before continuing: ' + problems.join('; ') + '.';
+        (first || m).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      return true;
+    }
+
     if (step === 'whatsnext') {
       const sb = document.getElementById('submitAppBtn');
       if (sb) sb.onclick = async () => {
         if (!confirm('Submit your application? You won\'t be able to edit it after submitting.')) return;
-        const { error } = await supabaseClient.from('applications').update({ status: 'submitted' }).eq('id', session.user.id);
-        if (error) { const m = document.getElementById('submitMsg'); m.className='status-msg show error'; m.textContent = error.message; return; }
+        const { data: done, error } = await supabaseClient.from('applications').update({ status: 'submitted' }).eq('id', session.user.id).select('id');
+        if (error || !done || !done.length) { const m = document.getElementById('submitMsg'); m.className='status-msg show error'; m.textContent = error ? error.message : 'Could not submit — your application record was not found. Please reload and try again.'; return; }
         app.status = 'submitted'; render();
       };
     }
 
     if (step === 'availability') {
       document.getElementById('availSave').onclick = async () => {
-        const m = document.getElementById('availMsg');
+        if (!validate('availMsg', [
+          {multi:'days',label:'Days you are available'},{id:'f_start',label:'Earliest start time'},
+          {id:'f_end',label:'Latest end time',test:()=>val('f_end') <= val('f_start') ? 'must be later than the start time' : ''},
+          {id:'f_len',label:'Preferred lesson length'},
+          {id:'f_maxstu',label:'How many students you can teach',test:()=>parseInt(val('f_maxstu')) >= 1 ? '' : 'enter a number, 1 or more'},
+          {id:'f_maxhrs',label:'Maximum hours per week',test:()=>parseInt(val('f_maxhrs')) >= 1 ? '' : 'enter a number, 1 or more'},
+          {multi:'ages',label:'Preferred student age groups'},{multi:'levels',label:'Preferred student English levels'}])) return;
         const days = multi('days');
-        if (!days) { m.className='status-msg show error'; m.textContent='Please choose at least one day.'; return; }
-        if (!val('f_start') || !val('f_end')) { m.className='status-msg show error'; m.textContent='Please enter a start and end time.'; return; }
         const fields = {
           avail_days: days, avail_start_time: val('f_start'), avail_end_time: val('f_end'),
           preferred_lesson_length: val('f_len'), max_students: parseInt(val('f_maxstu')) || null,
@@ -519,6 +577,11 @@
 
     if (step === 'profile') {
       document.getElementById('profileContinue').onclick = async () => {
+        if (!validate('profileMsg', [{id:'f_first_name',label:'First name'},{id:'f_last_name',label:'Last name'},{id:'f_preferred_name',label:'Preferred name'},
+          {id:'f_country',label:'Country'},{id:'f_city_region',label:'City / region'},{id:'f_timezone',label:'Time zone'},
+          {id:'f_dob',label:'Date of birth',test:()=>{ const a=ageOf(val('f_dob')); return a<18 ? 'volunteers must be 18 or older' : (a>100 ? 'please check the date' : ''); }},
+          {id:'f_native_language',label:'Native language'},{id:'f_other_languages',label:'Other languages (write None if none)'},
+          {id:'f_school_work',label:'Current school / work status'},{id:'f_bio',label:'Short biography',sentences:3}])) return;
         const fields = {
           first_name: val('f_first_name'), last_name: val('f_last_name'), preferred_name: val('f_preferred_name'),
           country: val('f_country'), city_region: val('f_city_region'), timezone: val('f_timezone'),
@@ -531,6 +594,10 @@
 
     if (step === 'english_bg') {
       document.getElementById('engContinue').onclick = async () => {
+        if (!validate('engMsg', [{yn:'english_is_native',label:'Is English your native language?'},{id:'f_english_years',label:'Years you have used English'},
+          {yn:'english_formal_study',label:'Studied English formally?'},{yn:'english_taught_before',label:'Taught English before?'},
+          {yn:'english_lived_abroad',label:'Lived in an English-speaking country?'},
+          {scale:'english_speaking_comfort',label:'Comfort speaking English'},{scale:'english_understanding_comfort',label:'Comfort understanding spoken English'}])) return;
         const fields = {
           english_is_native: yn('english_is_native'), english_years: val('f_english_years'),
           english_formal_study: yn('english_formal_study'), english_taught_before: yn('english_taught_before'),
@@ -544,6 +611,10 @@
 
     if (step === 'chinese_bg') {
       document.getElementById('chiContinue').onclick = async () => {
+        if (!validate('chiMsg', [{id:'f_chinese_languages',label:'Chinese language(s) you speak (write None if none)'},{id:'f_chinese_years',label:'Years studied Chinese (write 0 if none)'},
+          {id:'f_chinese_where',label:'Where you learned Chinese (write None if none)'},{yn:'chinese_lived_immersion',label:'Lived in a Chinese-speaking environment?'},
+          {scale:'chinese_speaking_comfort',label:'Comfort speaking Chinese'},{scale:'chinese_understanding_comfort',label:'Comfort understanding spoken Chinese'},
+          {yn:'chinese_can_read',label:'Can you read Chinese characters?'},{yn:'chinese_can_write',label:'Can you write Chinese characters?'}])) return;
         const fields = {
           chinese_languages: val('f_chinese_languages'), chinese_years: val('f_chinese_years'),
           chinese_learned_where: val('f_chinese_where'), chinese_lived_immersion: yn('chinese_lived_immersion'),
@@ -557,6 +628,11 @@
 
     if (step === 'teaching') {
       document.getElementById('teachContinue').onclick = async () => {
+        if (!validate('teachMsg', [{yn:'taught_before',label:'Have you taught before?'},{id:'f_teaching_subjects',label:'Subjects taught (write None if none)'},
+          {yn:'taught_english_before',label:'Taught English before?'},{id:'f_student_count',label:'Students worked with (write 0 if none)'},
+          {id:'f_age_groups',label:'Age groups taught (write None if none)'},{yn:'taught_online_before',label:'Taught online before?'},
+          {yn:'taught_other_language_students',label:'Worked with students who speak another language?'},
+          {id:'f_teaching_text',label:'Teaching experience',sentences:3}])) return;
         const fields = {
           taught_before: yn('taught_before'), teaching_subjects: val('f_teaching_subjects'),
           taught_english_before: yn('taught_english_before'), student_count_taught: val('f_student_count'),
@@ -570,6 +646,8 @@
 
     if (step === 'scenarios') {
       document.getElementById('scenContinue').onclick = async () => {
+        if (!validate('scenMsg', [{id:'f_scenario_1',label:'Scenario 1',sentences:3},{id:'f_scenario_2',label:'Scenario 2',sentences:3},
+          {id:'f_scenario_3',label:'Scenario 3',sentences:3},{id:'f_scenario_4',label:'Scenario 4',sentences:3}])) return;
         const fields = {
           scenario_1: val('f_scenario_1'), scenario_2: val('f_scenario_2'),
           scenario_3: val('f_scenario_3'), scenario_4: val('f_scenario_4'),

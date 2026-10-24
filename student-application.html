@@ -82,6 +82,10 @@
   .badge-soon{ font-family:var(--font-mono); font-size:0.65rem; background:var(--bg-tint-2); color:var(--ink-soft); padding:3px 8px; border-radius:999px; margin-left:auto; }
 
   .setup-note{ font-size:0.85rem; color:#9a6b1a; background:#fdf1e0; border-radius:10px; padding:14px 16px; line-height:1.6; }
+  .field label.req::after{ content:" *"; color:#d93025; font-weight:800; }
+  .req-note{ font-size:.82rem; color:var(--ink-soft); margin:-8px 0 20px; } .req-note b{ color:#d93025; }
+  input.invalid, select.invalid, textarea.invalid{ border-color:#d93025 !important; background:#fff5f4 !important; }
+  .radio-row.invalid{ outline:2px solid #d93025; outline-offset:5px; border-radius:10px; }
 </style>
 </head>
 <body>
@@ -118,12 +122,22 @@
     session = s;
     document.getElementById('whoEmail').textContent = s.user.email;
 
+    const meta = s.user.user_metadata || {};
+    const { data: prof } = await supabaseClient.from('profiles').select('role').eq('id', s.user.id).single();
+    if (prof && prof.role === 'volunteer') { window.location.href = 'application.html'; return; }
+    if (!prof) await supabaseClient.from('profiles').insert({ id: s.user.id, full_name: meta.full_name || s.user.email, role: 'student' });
+
     let { data: row } = await supabaseClient.from('student_applications').select('*').eq('id', s.user.id).single();
     if (!row) {
-      const { data: created } = await supabaseClient.from('student_applications').insert({ id: s.user.id, status: 'account_created' }).select().single();
-      row = created;
+      const res = await supabaseClient.from('student_applications').insert({ id: s.user.id, status: 'account_created' }).select().single();
+      row = res.data;
+      if (!row) {
+        wrap.innerHTML = '<div class="card"><h1>We couldn\'t open your registration<span class="zh">无法打开你的注册页面</span></h1><p class="lead">Your account exists, but we could not create or load its registration record, so anything you type would not be saved. Please reload. If it keeps happening, contact the site owner.<span class="zh">你的账号已存在，但无法创建或读取注册记录，所以填写的内容无法保存。请刷新页面；如果仍然出现，请联系网站管理员。</span></p><div class="status-msg show error" id="initErr"></div></div>';
+        document.getElementById('initErr').textContent = (res.error && res.error.message) || 'Unknown error';
+        return;
+      }
     }
-    app = row || { status: 'account_created' };
+    app = row;
     const map = { account_created:1, email_verified:2, profile_complete:3, goals_complete:4 };
     stepIndex = map[app.status] ?? 5;
     if (s.user.email_confirmed_at && stepIndex === 1) stepIndex = 2;
@@ -145,8 +159,12 @@
     }
     const payload = { ...fields };
     if (finalStatus !== cur) payload.status = finalStatus;
-    const { error } = await supabaseClient.from('student_applications').update(payload).eq('id', session.user.id);
+    const { data: saved, error } = await supabaseClient.from('student_applications').update(payload).eq('id', session.user.id).select('id');
     if (error) { alert('Could not save: ' + error.message); return false; }
+    if (!saved || !saved.length) {
+      alert('We could not save your answers because your registration record was not found. Please reload the page. If it keeps happening, log out and sign in again. 无法保存：找不到你的注册记录，请刷新页面。如果仍然出现，请退出后重新登录。');
+      return false;
+    }
     app = { ...app, ...fields, status: finalStatus };
     return true;
   }
@@ -159,6 +177,11 @@
     const step = STEPS[stepIndex];
     const body = { welcome: welcomeStep, verify: verifyStep, profile: profileStep, goals: goalsStep, consent: consentStep, hub: hubStep }[step]();
     wrap.innerHTML = (step === 'welcome' || step === 'hub') ? body : progressHTML() + body;
+    if (['profile','goals'].includes(step)) {
+      const lead = wrap.querySelector('.card .lead');
+      const note = '<p class="req-note"><b>*</b> Required — fill in everything marked with a red * to continue. 带红色 * 的为必填项，请全部填写后再继续。</p>';
+      if (lead) lead.insertAdjacentHTML('afterend', note); else wrap.querySelector('.card h1').insertAdjacentHTML('afterend', note);
+    }
     wireStep(step);
   }
   function msgBox(id){ return `<div id="${id}" class="status-msg"></div>`; }
@@ -200,30 +223,30 @@
       <h1>${bi('About You','关于你')}</h1>
       <p class="lead">We use this to match you with the right volunteer and time. Only our team can see it — it is never shown to other students.<span class="zh">这些信息用于为你匹配合适的志愿者和时间，仅我们的团队可见，不会向其他学生显示。</span></p>
       <div class="two-col">
-        <div class="field"><label>First name · 名</label><input type="text" id="f_first" value="${v('first_name')}"></div>
-        <div class="field"><label>Last name · 姓</label><input type="text" id="f_last" value="${v('last_name')}"></div>
+        <div class="field"><label class="req">First name · 名</label><input type="text" id="f_first" value="${v('first_name')}"></div>
+        <div class="field"><label class="req">Last name · 姓</label><input type="text" id="f_last" value="${v('last_name')}"></div>
       </div>
       <div class="two-col">
-        <div class="field"><label>English name · 英文名</label><input type="text" id="f_pref" value="${v('preferred_name')}"><div class="help">What should your volunteer call you? · 希望志愿者怎么称呼你？</div></div>
+        <div class="field"><label class="req">English name · 英文名</label><input type="text" id="f_pref" value="${v('preferred_name')}"><div class="help">What should your volunteer call you? · 希望志愿者怎么称呼你？</div></div>
         <div class="field"><label>Chinese name · 中文名 (optional 选填)</label><input type="text" id="f_cn" value="${v('chinese_name')}"></div>
       </div>
       <div class="two-col">
-        <div class="field"><label>Date of birth · 出生日期</label><input type="date" id="f_dob" value="${v('date_of_birth')}"></div>
-        <div class="field"><label>School / grade · 学校/年级</label><input type="text" id="f_grade" value="${v('school_grade')}"></div>
+        <div class="field"><label class="req">Date of birth · 出生日期</label><input type="date" id="f_dob" value="${v('date_of_birth')}"></div>
+        <div class="field"><label class="req">School / grade · 学校/年级</label><input type="text" id="f_grade" value="${v('school_grade')}"></div>
       </div>
       <div class="two-col">
-        <div class="field"><label>City / region · 城市/地区</label><input type="text" id="f_city" value="${v('city_region')}"></div>
-        <div class="field"><label>Time zone · 时区</label><input type="text" id="f_tz" value="${v('timezone') || 'China Standard Time (GMT+8)'}"></div>
+        <div class="field"><label class="req">City / region · 城市/地区</label><input type="text" id="f_city" value="${v('city_region')}"></div>
+        <div class="field"><label class="req">Time zone · 时区</label><input type="text" id="f_tz" value="${v('timezone') || 'China Standard Time (GMT+8)'}"></div>
       </div>
       <div class="guardian-box" id="guardianBox" style="display:${age !== null && age < 18 ? 'block' : 'none'};">
         <div style="font-weight:700;margin-bottom:4px;">Parent / guardian · 家长/监护人</div>
         <div class="help" style="margin:0 0 14px;">Required because you are under 18. We may contact your guardian by email. 因为你未满18岁，此项必填。我们可能会通过邮件联系你的监护人。</div>
         <div class="two-col">
-          <div class="field"><label>Name · 姓名</label><input type="text" id="g_name" value="${v('guardian_name')}"></div>
-          <div class="field"><label>Relationship to you · 与你的关系</label><input type="text" id="g_rel" placeholder="e.g. Mother 母亲" value="${v('guardian_relationship')}"></div>
+          <div class="field"><label class="req">Name · 姓名</label><input type="text" id="g_name" value="${v('guardian_name')}"></div>
+          <div class="field"><label class="req">Relationship to you · 与你的关系</label><input type="text" id="g_rel" placeholder="e.g. Mother 母亲" value="${v('guardian_relationship')}"></div>
         </div>
         <div class="two-col">
-          <div class="field"><label>Email · 邮箱</label><input type="text" id="g_email" value="${v('guardian_email')}"></div>
+          <div class="field"><label class="req">Email · 邮箱</label><input type="text" id="g_email" value="${v('guardian_email')}"></div>
           <div class="field"><label>Phone · 电话 (optional 选填)</label><input type="text" id="g_phone" value="${v('guardian_phone')}"></div>
         </div>
       </div>
@@ -240,17 +263,17 @@
     const v = k => esc(app[k] || '');
     return `<div class="card">
       <h1>${bi('Your English Goals','你的英语学习目标')}</h1>
-      <div class="field"><label>How would you describe your English? · 你觉得自己的英语水平是？</label>
+      <div class="field"><label class="req">How would you describe your English? · 你觉得自己的英语水平是？</label>
         ${pills('level',[['Beginner','Beginner 初学者'],['Elementary','Elementary 基础'],['Intermediate','Intermediate 中级'],['Advanced','Advanced 高级']], v('english_self_level'), true)}
         <div class="help">Don't worry — you will take a short test later. · 别担心，之后还有简短的测试。</div></div>
-      <div class="field"><label>How long have you studied English? · 学了多久英语？</label><input type="text" id="f_years" placeholder="e.g. 3 years 3年" value="${v('years_studied')}"></div>
-      <div class="field"><label>What do you want to improve? (choose any) · 你想提高什么？（可多选）</label>
+      <div class="field"><label class="req">How long have you studied English? · 学了多久英语？</label><input type="text" id="f_years" placeholder="e.g. 3 years 3年 — or 0" value="${v('years_studied')}"></div>
+      <div class="field"><label class="req">What do you want to improve? (choose any) · 你想提高什么？（可多选）</label>
         ${pills('goals',[['Everyday conversation','Everyday conversation 日常对话'],['School exams','School exams 学校考试'],['Travel','Travel 旅行'],['Study abroad','Study abroad 出国留学'],['Work','Work 工作'],['Pronunciation','Pronunciation 发音'],['Confidence','Confidence 增强自信']], v('learning_goals'))}</div>
-      <div class="field"><label>Days you can have a lesson · 可以上课的日子</label>
+      <div class="field"><label class="req">Days you can have a lesson · 可以上课的日子</label>
         ${pills('days',[['Mon','周一 Mon'],['Tue','周二 Tue'],['Wed','周三 Wed'],['Thu','周四 Thu'],['Fri','周五 Fri'],['Sat','周六 Sat'],['Sun','周日 Sun']], v('preferred_days'))}</div>
       <div class="two-col">
-        <div class="field"><label>Earliest time · 最早时间 (Beijing time 北京时间)</label><input type="time" id="f_start" value="${v('preferred_start_time')}"></div>
-        <div class="field"><label>Latest time · 最晚时间 (Beijing time 北京时间)</label><input type="time" id="f_end" value="${v('preferred_end_time')}"></div>
+        <div class="field"><label class="req">Earliest time · 最早时间 (Beijing time 北京时间)</label><input type="time" id="f_start" value="${v('preferred_start_time')}"></div>
+        <div class="field"><label class="req">Latest time · 最晚时间 (Beijing time 北京时间)</label><input type="time" id="f_end" value="${v('preferred_end_time')}"></div>
       </div>
       <div class="field"><label>Request a volunteer · 指定志愿者 (optional 选填)</label><input type="text" id="f_reqvol" value="${v('requested_volunteer')}"><div class="help">If you know a volunteer's name, write it. We cannot promise, but we will try. 如果你知道志愿者的名字可以填写，我们会尽量安排，但无法保证。</div></div>
       <div class="field"><label>Anything your volunteer should know? · 还有什么想让志愿者知道的？ (optional 选填)</label><textarea id="f_notes">${v('notes_for_volunteer')}</textarea></div>
@@ -321,6 +344,24 @@
       el.classList.add('selected');
     }));
 
+    function validate(msgId, checks){
+      wrap.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+      const problems = []; let first = null;
+      checks.forEach(c => {
+        let ok = true, el = null, extra = '';
+        if (c.id) { el = document.getElementById(c.id); if (!(el && el.value.trim())) ok = false; }
+        else if (c.pick) { ok = !!picked(c.pick); const p = wrap.querySelector('[data-grp="' + c.pick + '"]'); el = p && p.parentElement; }
+        if (ok && c.test) { const r = c.test(); if (r) { ok = false; extra = ' (' + r + ')'; } }
+        if (!ok) { problems.push(c.label + extra); if (el) { el.classList.add('invalid'); if (!first) first = el; } }
+      });
+      if (problems.length) {
+        showMsg(msgId, 'Please complete the fields marked with a red * 请填写带红色 * 的必填项: ' + problems.join('; ') + '.');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      return true;
+    }
+
     if (step === 'verify') {
       document.getElementById('resendBtn').onclick = async () => {
         const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email, options: { emailRedirectTo: pageUrl('confirmed.html') } });
@@ -341,13 +382,15 @@
       });
       document.getElementById('profileContinue').onclick = async () => {
         const dob = val('f_dob'), age = ageFrom(dob);
-        if (!val('f_first') || !val('f_last')) return showMsg('profileMsg', 'Please enter your first and last name. 请填写姓和名。');
-        if (!dob || age === null || age < 3 || age > 100) return showMsg('profileMsg', 'Please enter a valid date of birth. 请填写有效的出生日期。');
-        if (!val('f_pref')) return showMsg('profileMsg', 'Please enter the name you want your volunteer to call you. 请填写希望志愿者称呼你的名字。');
-        if (age < 18) {
-          if (!val('g_name') || !val('g_rel')) return showMsg('profileMsg', 'A parent or guardian name and relationship are required. 请填写监护人姓名及与你的关系。');
-          if (!emailOk(val('g_email'))) return showMsg('profileMsg', 'A valid parent/guardian email is required. 请填写有效的监护人邮箱。');
-        }
+        const minor = age !== null && age < 18;
+        const checks = [
+          {id:'f_first',label:'First name 名'},{id:'f_last',label:'Last name 姓'},{id:'f_pref',label:'English name 英文名'},
+          {id:'f_dob',label:'Date of birth 出生日期',test:()=>(age === null || age < 3 || age > 100) ? 'please check the date 请检查日期' : ''},
+          {id:'f_grade',label:'School / grade 学校/年级'},{id:'f_city',label:'City / region 城市/地区'},{id:'f_tz',label:'Time zone 时区'},
+        ];
+        if (minor) checks.push({id:'g_name',label:'Guardian name 监护人姓名'},{id:'g_rel',label:'Relationship 关系'},
+          {id:'g_email',label:'Guardian email 监护人邮箱',test:()=>emailOk(val('g_email')) ? '' : 'enter a valid email 请输入有效邮箱'});
+        if (!validate('profileMsg', checks)) return;
         const fields = { first_name: val('f_first'), last_name: val('f_last'), preferred_name: val('f_pref'), chinese_name: val('f_cn'),
           date_of_birth: dob, school_grade: val('f_grade'), city_region: val('f_city'), timezone: val('f_tz'),
           guardian_name: age < 18 ? val('g_name') : null, guardian_relationship: age < 18 ? val('g_rel') : null,
@@ -358,9 +401,11 @@
 
     if (step === 'goals') {
       document.getElementById('goalsContinue').onclick = async () => {
-        if (!picked('level')) return showMsg('goalsMsg', 'Please choose your English level. 请选择你的英语水平。');
-        if (!picked('goals')) return showMsg('goalsMsg', 'Please choose at least one goal. 请至少选择一个目标。');
-        if (!picked('days') || !val('f_start') || !val('f_end')) return showMsg('goalsMsg', 'Please choose your days and times. 请选择可上课的日子和时间。');
+        if (!validate('goalsMsg', [
+          {pick:'level',label:'English level 英语水平'},{id:'f_years',label:'Years studied 学习年限'},
+          {pick:'goals',label:'Goals 学习目标'},{pick:'days',label:'Days 可上课的日子'},
+          {id:'f_start',label:'Earliest time 最早时间'},
+          {id:'f_end',label:'Latest time 最晚时间',test:()=>val('f_end') <= val('f_start') ? 'must be later than the start time 须晚于最早时间' : ''}])) return;
         const fields = { english_self_level: picked('level'), years_studied: val('f_years'), learning_goals: picked('goals'),
           preferred_days: picked('days'), preferred_start_time: val('f_start'), preferred_end_time: val('f_end'),
           requested_volunteer: val('f_reqvol'), notes_for_volunteer: val('f_notes') };
@@ -383,8 +428,8 @@
       const sb = document.getElementById('submitAppBtn');
       if (sb) sb.onclick = async () => {
         if (!confirm('Submit your registration? 确认提交注册吗？')) return;
-        const { error } = await supabaseClient.from('student_applications').update({ status: 'submitted' }).eq('id', session.user.id);
-        if (error) return showMsg('submitMsg', error.message);
+        const { data: done, error } = await supabaseClient.from('student_applications').update({ status: 'submitted' }).eq('id', session.user.id).select('id');
+        if (error || !done || !done.length) return showMsg('submitMsg', error ? error.message : 'Could not submit — your registration record was not found. Please reload. 无法提交：找不到注册记录，请刷新页面。');
         app.status = 'submitted'; render();
       };
     }

@@ -101,8 +101,11 @@ async function init(){
   session = s;
   const { data } = await supabaseClient.from('student_applications').select('*').eq('id', s.user.id).single();
   row = data;
-  if (!row || !s.user.email_confirmed_at || !row.consent_rules){ location.href = 'student-application.html'; return; }
-  if (FINAL.includes(row.status)){ location.href = 'student-application.html'; return; }
+  const stop = (t, m) => { root.innerHTML = '<div class="sec center"><h2></h2><p class="lead"></p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">Back · 返回</a></div>'; root.querySelector('h2').textContent = t; root.querySelector('p').textContent = m; };
+  if (!row){ stop("We couldn't find your registration · 找不到你的注册记录", 'Open your registration page first, then come back. 请先打开注册页面，再回到这里。'); return; }
+  if (!s.user.email_confirmed_at){ stop('Please confirm your email first · 请先验证邮箱', 'Click the link in the email we sent you. 请点击我们发给你的邮件中的链接。'); return; }
+  if (!row.consent_rules){ stop('Please finish the safety agreement first · 请先完成安全守则', 'Go back to your checklist and agree to the rules. 请返回清单并同意规则。'); return; }
+  if (FINAL.includes(row.status)){ stop('Your registration was already submitted · 注册已提交', 'The test is closed now. 测试已关闭。'); return; }
   if (row.placement_score != null){
     root.innerHTML = '<div class="sec center"><h2>✓ You already finished the test · 你已完成测试</h2><p class="lead">The test can be taken once. 测试只能做一次。</p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">Back · 返回</a></div>'; return;
   }
@@ -128,8 +131,8 @@ function render(){
     ${LISTEN.map((q,i)=>`<div class="q"><div class="stem">Audio ${i+1}: <button class="btn ghost play" data-i="${i}" style="padding:6px 14px;margin-left:6px;">▶ Play 播放</button> <span class="rec-state" id="plays${i}">2 plays left</span></div>
       <div class="stem" style="margin-top:12px;">${q[1]}</div>${q[2].map((o,j)=>`<label class="opt" data-l="${i}" data-o="${j}">${String.fromCharCode(65+j)}. ${o}</label>`).join('')}</div>`).join('')}</div>`;
 
-  html += `<div class="sec"><span class="tag">PART 4 · 第四部分</span><h2>Writing · 写作</h2>
-    <p class="lead">Write 3 to 5 sentences in English about yourself: your name, where you live, and what you like to do. Write only what you can — it's okay to make mistakes.<br>用英语写3到5句话介绍你自己：你的名字、住在哪里、喜欢做什么。写你会写的就好，有错误也没关系。</p>
+  html += `<div class="sec"><span class="tag">PART 4 · 第四部分</span><h2>Writing · 写作 <span style="color:#d93025">*</span></h2>
+    <p class="lead">Write <b>at least 3 sentences</b> (3 to 5 is perfect) in English about yourself: your name, where you live, and what you like to do. Write only what you can — it's okay to make mistakes.<br>用英语写3到5句话介绍你自己：你的名字、住在哪里、喜欢做什么。写你会写的就好，有错误也没关系。</p>
     <textarea id="essay" style="min-height:130px;" placeholder="Hello, my name is…"></textarea><div class="counter" id="essayCount">0 words</div></div>`;
 
   html += `<div class="sec"><span class="tag">PART 5 · 第五部分 (optional 选做)</span><h2>Speaking · 口语</h2>
@@ -201,7 +204,8 @@ async function submit(){
   if (left){ showErr(`Please answer every question — ${left} left. If you're not sure, guess! 请回答所有题目，还剩 ${left} 题。不确定可以猜一个！`); return; }
   const essay = document.getElementById('essay').value.trim();
   const words = essay ? essay.split(/\s+/).length : 0;
-  if (words < 5){ showErr('Please write at least a few words. 请至少写几个单词。'); return; }
+  const sentences = essay.split(/[.!?。！？…]+/).map(x=>x.trim()).filter(x=>x.replace(/\s/g,'').length>=6).length;
+  if (sentences < 3){ showErr('Please write at least 3 full sentences (you wrote ' + sentences + '). 请至少写3句完整的话（目前 ' + sentences + ' 句）。'); return; }
   if (!confirm('Submit the test? You can only take it once. 确定提交吗？测试只能做一次。')) return;
 
   const t = { grammar:[0,0], reading:[0,0] };

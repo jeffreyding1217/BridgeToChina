@@ -152,6 +152,12 @@ let recorded = {};     // speaking prompt index -> true once uploaded
 let listenPlays = {};
 const root = document.getElementById('root');
 
+function block(title, text, href, btn){
+  root.innerHTML = '<div class="sec center"><h2></h2><p class="lead"></p><a class="btn" style="text-decoration:none;display:inline-block"></a></div>';
+  root.querySelector('h2').textContent = title; root.querySelector('p').textContent = text;
+  const a = root.querySelector('a'); a.href = href; a.textContent = btn;
+}
+
 async function init(){
   lang = new URLSearchParams(location.search).get('lang') === 'chinese' ? 'chinese' : 'english';
   L = BANK[lang];
@@ -162,8 +168,8 @@ async function init(){
   session = s;
   const { data: row } = await supabaseClient.from('applications').select('*').eq('id', s.user.id).single();
   appRow = row;
-  if (!appRow){ location.href = 'application.html'; return; }
-  if (!s.user.email_confirmed_at){ location.href = 'application.html'; return; }
+  if (!appRow){ block("We couldn't find your application record", 'Open your application page first — it sets up your record — then come back and start the assessment.', 'application.html', 'Open my application'); return; }
+  if (!s.user.email_confirmed_at){ block('Please confirm your email first', 'You need to click the verification link in your email before taking the assessment.', 'application.html', 'Back to my application'); return; }
   if (lang === 'chinese' && appRow.english_mc_score == null){
     root.innerHTML = '<div class="sec center"><h2>Please complete the English assessment first</h2><p class="lead">The assessments are taken in order.</p><a class="btn" href="assessment.html?lang=english" style="text-decoration:none;display:inline-block">Go to English assessment</a></div>';
     return;
@@ -173,7 +179,7 @@ async function init(){
     return;
   }
   if (['submitted','under_review','approved','not_approved','needs_additional_training','suspended'].includes(appRow.status)){
-    location.href = 'application.html'; return;
+    block('Your application is already submitted', 'Assessments are closed once an application has been submitted. Our team will be in touch.', 'application.html', 'Back to my application'); return;
   }
   render();
 }

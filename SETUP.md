@@ -14,8 +14,14 @@ Upload every file in this folder to your web host, all in the same folder. `inde
    it's already included at the bottom of `supabase-schema.sql`.
 4. Authentication → Providers → Email → keep **Confirm email ON** if you want real email
    verification (recommended — the application requires it). While testing you can turn it off.
-   Authentication → URL Configuration → set Site URL to your website's address so the
-   verification link comes back to your site.
+   **REQUIRED so the email link doesn't 404:** Authentication → URL Configuration →
+   - Site URL = your site's real address, e.g. https://YOURNAME.github.io/YOUR-REPO/
+     (copy it from GitHub → Settings → Pages → "Your site is live at"). If you rename the repo
+     later, update this again.
+   - Redirect URLs → Add URL → https://YOURNAME.github.io/YOUR-REPO/**   (note the two stars at the end)
+   For this project: Site URL  https://jeffreyding1217.github.io/BridgeToChina/
+                     Redirect  https://jeffreyding1217.github.io/BridgeToChina/**
+   The confirmation email sends people to `confirmed.html` on your site.
 
 ## 2b. IMPORTANT for students in mainland China (do this before launch)
 - **Download the Supabase library and host it yourself.** Open

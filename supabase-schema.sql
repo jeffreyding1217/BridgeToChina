@@ -1,4 +1,6 @@
--- Bridge to China — Volunteer Accounts Schema
+-- Bridge to China — Database setup (volunteers + students)
+-- SAFE TO RUN MORE THAN ONCE: it replaces what it created before instead of erroring.
+-- Paste the WHOLE file into Supabase → SQL Editor → New query → Run.
 -- Run this once in your Supabase project: Dashboard → SQL Editor → New Query → paste → Run
 
 -- One row per volunteer, linked to Supabase's built-in auth.users table.
@@ -12,17 +14,25 @@ create table if not exists profiles (
   created_at timestamp with time zone default now()
 );
 
+-- If this table was created by an earlier version of this script it only allowed the
+-- role 'volunteer'. This re-creates the rule so 'student' is allowed too.
+alter table profiles drop constraint if exists profiles_role_check;
+alter table profiles add constraint profiles_role_check check (role in ('volunteer','student'));
+
 -- Row Level Security: a volunteer can only ever see/edit their OWN row.
 alter table profiles enable row level security;
 
+drop policy if exists "Volunteers can view their own profile" on profiles;
 create policy "Volunteers can view their own profile"
   on profiles for select
   using (auth.uid() = id);
 
+drop policy if exists "Volunteers can insert their own profile" on profiles;
 create policy "Volunteers can insert their own profile"
   on profiles for insert
   with check (auth.uid() = id);
 
+drop policy if exists "Volunteers can update their own profile" on profiles;
 create policy "Volunteers can update their own profile"
   on profiles for update
   using (auth.uid() = id);
@@ -128,16 +138,19 @@ create table if not exists applications (
 alter table applications enable row level security;
 
 -- A volunteer can see and edit only their own application...
+drop policy if exists "Volunteers manage their own application" on applications;
 create policy "Volunteers manage their own application"
   on applications for all
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
 -- ...but an admin can see every application, to actually review them.
+drop policy if exists "Admins can view all applications" on applications;
 create policy "Admins can view all applications"
   on applications for select
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
 
+drop policy if exists "Admins can update any application" on applications;
 create policy "Admins can update any application"
   on applications for update
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
@@ -185,11 +198,13 @@ create table if not exists speaking_recordings (
 
 alter table speaking_recordings enable row level security;
 
+drop policy if exists "Volunteers manage their own recordings" on speaking_recordings;
 create policy "Volunteers manage their own recordings"
   on speaking_recordings for all
   using (auth.uid() = application_id)
   with check (auth.uid() = application_id);
 
+drop policy if exists "Admins can view all recordings" on speaking_recordings;
 create policy "Admins can view all recordings"
   on speaking_recordings for select
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
@@ -207,12 +222,16 @@ insert into storage.buckets (id, name, public)
 values ('recordings', 'recordings', false)
 on conflict (id) do nothing;
 
+drop policy if exists "Volunteers upload own recordings" on storage.objects;
 create policy "Volunteers upload own recordings" on storage.objects for insert to authenticated
   with check (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "Volunteers read own recordings" on storage.objects;
 create policy "Volunteers read own recordings" on storage.objects for select to authenticated
   using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "Volunteers delete own recordings" on storage.objects;
 create policy "Volunteers delete own recordings" on storage.objects for delete to authenticated
   using (bucket_id = 'recordings' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "Admins read all recordings" on storage.objects;
 create policy "Admins read all recordings" on storage.objects for select to authenticated
   using (bucket_id = 'recordings' and exists (select 1 from profiles where id = auth.uid() and is_admin = true));
 
@@ -324,12 +343,15 @@ create table if not exists student_applications (
 
 alter table student_applications enable row level security;
 
+drop policy if exists "Students manage their own application" on student_applications;
 create policy "Students manage their own application"
   on student_applications for all
   using (auth.uid() = id) with check (auth.uid() = id);
+drop policy if exists "Admins can view all student applications" on student_applications;
 create policy "Admins can view all student applications"
   on student_applications for select
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
+drop policy if exists "Admins can update any student application" on student_applications;
 create policy "Admins can update any student application"
   on student_applications for update
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
@@ -347,9 +369,11 @@ create table if not exists student_recordings (
   created_at timestamp with time zone default now()
 );
 alter table student_recordings enable row level security;
+drop policy if exists "Students manage their own recordings" on student_recordings;
 create policy "Students manage their own recordings"
   on student_recordings for all
   using (auth.uid() = student_id) with check (auth.uid() = student_id);
+drop policy if exists "Admins can view all student recordings" on student_recordings;
 create policy "Admins can view all student recordings"
   on student_recordings for select
   using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));

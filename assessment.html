@@ -64,80 +64,62 @@ const BANK = {
 english: {
   title: 'English Assessment',
   htmlLang: 'en', ttsLang: 'en-US',
+  // 12 questions: the first 2 of each group are easy, the rest are harder (4 easy : 8 harder).
   mc: [
     ['grammar','She ____ to the store yesterday afternoon.',['go','goes','went','gone'],2],
-    ['grammar','If I ____ more time, I would travel the world.',['have','had','will have','having'],1],
+    ['grammar','Which sentence is correct?',['Their going to be late.','They\'re going to be late.','There going to be late.','Theyre going to be late.'],1],
     ['grammar','Neither the teacher nor the students ____ aware of the schedule change.',['was','were','is','has been'],1],
-    ['grammar','The report ____ by the committee before the deadline passed.',['completed','was completed','has completing','is complete'],1],
-    ['grammar','He insisted that she ____ present at the meeting.',['is','was','be','being'],2],
-    ['grammar','The author, ____ latest novel won several awards, will visit our school.',['who','which','whose','whom'],2],
-    ['grammar','By next June, they ____ in this city for ten years.',['will have lived','will live','have lived','are living'],0],
-    ['grammar','Which sentence is grammatically correct?',['Between you and I, the plan is flawed.','Between you and myself, the plan is flawed.','Between I and you, the plan is flawed.','Between you and me, the plan is flawed.'],3],
-    ['vocabulary','Her ____ explanation left no room for doubt.',['ambiguous','tenuous','lucid','convoluted'],2],
-    ['vocabulary','Choose the closest meaning of "ubiquitous".',['rare','widespread','hidden','ancient'],1],
-    ['vocabulary','Choose the opposite of "frugal".',['thrifty','careful','modest','lavish'],3],
-    ['vocabulary','"He took the criticism in stride." This means he…',['resented it','accepted it calmly','walked away from it','ignored the critic'],1],
-    ['vocabulary','The politician\'s remarks were deliberately equivocal. "Equivocal" means…',['open to more than one interpretation','extremely angry','clearly false','very short'],0],
-    ['vocabulary','Choose the closest meaning of "mitigate".',['worsen','explain','ignore','lessen'],3],
+    ['grammar','If I had known about the traffic, I ____ earlier.',['leave','would leave','would have left','had left'],2],
+    ['grammar','He insisted that she ____ present at the meeting.',['is','was','being','be'],3],
+    ['grammar','The author, ____ latest novel won several awards, will visit our school.',['whose','who','which','whom'],0],
+    ['vocabulary','Choose the opposite of "generous".',['kind','wealthy','polite','stingy'],3],
+    ['vocabulary','"It\'s raining cats and dogs." means…',['it is raining very heavily','animals are falling from the sky','it is only a light drizzle','the rain is about to stop'],0],
+    ['vocabulary','The politician\'s remarks were deliberately equivocal. "Equivocal" means…',['extremely angry','clearly false','very short','open to more than one interpretation'],3],
+    ['vocabulary','Choose the closest meaning of "mitigate".',['lessen','worsen','explain','ignore'],0],
     ['reading','Which best states the main idea of the passage?',['Four-day school weeks have been proven to harm learning.','Four-day school weeks are a debated cost-saving trend with mixed evidence.','Teachers overwhelmingly prefer shorter weeks.','Districts should abolish the fifth school day everywhere.'],1],
-    ['reading','Which benefit do supporters mention?',['Lower student absence','Cheaper textbooks','Improved teacher recruitment','Higher math scores'],2],
-    ['reading','As used in the passage, "inconclusive" means…',['proving harm','unfair to families','out of date','not leading to a definite conclusion'],3],
-    ['reading','The mention of optional tutoring suggests that…',['tutoring is legally required','outcomes may depend on how districts use the extra day','tutoring removes all cost savings','students dislike the fifth day'],1],
+    ['reading','The mention of optional tutoring suggests that…',['tutoring is legally required','tutoring removes all cost savings','outcomes may depend on how districts use the extra day','students dislike the fifth day'],2],
   ],
-  passage: 'Several rural school districts have shifted to a four-day week to save on transportation and staffing costs. Supporters say the change has improved teacher recruitment and given students a full day for appointments and part-time jobs. Critics worry that longer daily sessions tire younger children and that families without reliable childcare face a new burden on the fifth day. Early studies are inconclusive: some show stable test scores, while others show modest declines in math. Researchers caution that results may depend heavily on how districts use the extra day — for example, whether they offer optional tutoring.',
+  passage: 'Several rural school districts have shifted to a four-day week to save on transportation and staffing costs. Supporters say the change has improved teacher recruitment, while critics worry that longer days tire younger children and burden families without childcare on the fifth day. Early studies are inconclusive, and researchers caution that results may depend on how districts use the extra day — for example, whether they offer optional tutoring.',
   passageStartsAtCategory: 'reading',
   listening: [
-    ['I\'m meeting my friend at the library at four o\'clock, but I need to stop by the post office first.','Where is the speaker going first?',['The library','The post office','Home','School'],1],
-    ['The train to the city leaves at nine fifteen, not nine fifty. If you miss it, the next one is at ten thirty.','What time does the train leave?',['9:50','10:30','9:15','9:30'],2],
     ['Although the museum is free on Sundays, the special exhibit still requires a ticket, which must be reserved online at least a day in advance.','What must visitors do to see the special exhibit?',['Arrive early on Sunday','Pay at the door','Bring a membership card','Reserve a ticket online beforehand'],3],
     ['I would have called earlier, but my phone died, and by the time I found a charger, it was past midnight.','Why didn\'t the speaker call earlier?',['The phone battery ran out','They forgot','They were angry','They had no number'],0],
   ],
-  essayPrompt: 'Write 200–300 words explaining why learning a second language can be valuable. Give specific examples and support your opinion.',
-  essayMin: 150, essayUnit: 'words',
+  essayPrompt: 'Write 100–200 words explaining why learning a second language can be valuable. Give specific examples and support your opinion.',
+  essayMin: 100, essayUnit: 'words', essayAim: '100–200',
   speaking: [
     'Introduce yourself and explain why you want to volunteer.',
     'Explain how you would teach a student the difference between two commonly confused English words.',
-    'Describe a difficult situation you experienced and explain how you handled it.',
-    'Explain why cultural exchange can be valuable to students.',
   ],
 },
 chinese: {
   title: 'Chinese Assessment (中文测试)',
   htmlLang: 'zh', ttsLang: 'zh-CN',
+  // 12 questions: the first 4 grammar items are easy, the other 8 are harder (4 easy : 8 harder).
   mc: [
     ['grammar','我昨天去书店____一本很有意思的书。',['买着','正在买','买了','要买'],2],
-    ['grammar','他的汉语说得____我好。',['比','和','把','被'],0],
     ['grammar','我买了三____书。',['个','张','条','本'],3],
-    ['grammar','请____门关上，外面很吵。',['被','让','把','对'],2],
-    ['grammar','我的手机____小偷偷走了。',['把','被','对','向'],1],
+    ['grammar','请____门关上，外面很吵。',['被','把','让','对'],1],
+    ['grammar','____明天下雨，我们就不去公园了。',['如果','虽然','因为','但是'],0],
+    ['grammar','我的手机____小偷偷走了。',['被','把','对','向'],0],
     ['grammar','我从来没____这么好吃的菜。',['吃的','吃着','吃过','吃了'],2],
-    ['grammar','____明天下雨，我们就不去公园了。',['虽然','因为','但是','如果'],3],
-    ['grammar','____他很累，____他还是坚持完成了工作。',['如果……就','虽然……但是','因为……所以','不但……而且'],1],
-    ['grammar','下面哪个句子是正确的？',['我明天下午在图书馆见面朋友。','我在图书馆明天下午见朋友。','我明天下午在图书馆见朋友。','明天我见朋友在图书馆下午。'],2],
-    ['vocabulary','这位老师的讲解非常____，大家一听就懂了。',['模糊','复杂','危险','清楚'],3],
-    ['vocabulary','"宁静"的意思最接近哪个词？',['热闹','安静','拥挤','忙碌'],1],
+    ['grammar','____他很累，____他还是坚持完成了工作。',['如果……就','因为……所以','不但……而且','虽然……但是'],3],
+    ['grammar','下面哪个句子是正确的？',['我明天下午在图书馆见面朋友。','我明天下午在图书馆见朋友。','我在图书馆明天下午见朋友。','明天我见朋友在图书馆下午。'],1],
+    ['vocabulary','成语"画蛇添足"的意思是？',['做多余的事，反而不好','画画画得很好','小心谨慎','很会画画'],0],
     ['vocabulary','"节约"的反义词是？',['节省','储蓄','浪费','爱护'],2],
-    ['vocabulary','成语"画蛇添足"的意思是？',['画画画得很好','小心谨慎','很会画画','做多余的事，反而不好'],3],
-    ['vocabulary','他对这个消息感到十分____，因为他完全没有想到。',['意外','熟悉','满意','普通'],0],
-    ['reading','这段话的主要内容是什么？',['自行车比汽车便宜','所有城市都修了自行车道','鼓励骑车出行既有好处也有问题','共享单车应该被禁止'],2],
-    ['reading','下面哪一项不是支持者提到的好处？',['环保','健康','速度比汽车快','缓解交通拥堵'],2],
-    ['reading','"效果明显"的意思最接近哪一项？',['价格很高','作用很清楚','速度很快','看起来很旧'],1],
-    ['reading','专家的建议是什么？',['禁止共享单车','只增加自行车道','不再鼓励骑车','增加设施的同时加强管理'],3],
+    ['reading','这段话的主要内容是什么？',['自行车比汽车便宜','鼓励骑车出行既有好处也有问题','所有城市都修了自行车道','共享单车应该被禁止'],1],
+    ['reading','下面哪一项不是支持者提到的好处？',['环保','健康','缓解交通拥堵','速度比汽车快'],3],
   ],
-  passage: '近年来，越来越多的城市鼓励市民骑自行车出行。支持者认为，骑车既环保又健康，还能缓解交通拥堵。但也有人担心，道路上自行车道不够多，骑车并不安全。有的城市为此专门修建了自行车道，并提供共享单车，效果明显，不过停放混乱的问题也随之出现。专家建议，政府应该在增加设施的同时，加强管理。',
+  passage: '近年来，越来越多的城市鼓励市民骑自行车出行。支持者认为，骑车既环保又健康，还能缓解交通拥堵。但也有人担心，自行车道不够多，骑车并不安全。专家建议，政府应该在增加设施的同时，加强管理。',
   passageStartsAtCategory: 'reading',
   listening: [
-    ['我先去邮局寄信，然后四点在图书馆跟朋友见面。','说话的人先去哪儿？',['图书馆','学校','家','邮局'],3],
-    ['去市中心的火车九点十五分开，不是九点五十。如果你赶不上，下一班是十点半。','火车几点开？',['九点十五分','九点五十分','十点半','九点半'],0],
     ['虽然星期天博物馆免费，但是看特别展览还是需要门票，而且必须提前一天在网上预约。','参观特别展览需要做什么？',['星期天直接进去','在门口买票','不需要票','提前一天在网上预约门票'],3],
     ['我本来想早点给你打电话，可是手机没电了，等我找到充电器，已经过了半夜了。','说话的人为什么没有早点打电话？',['他忘记了','手机没电了','他太生气了','他没有电话号码'],1],
   ],
-  essayPrompt: '请用中文写一篇 200–300 字的短文，介绍你为什么学习中文，以及学习中文对你有什么帮助。',
-  essayMin: 100, essayUnit: 'characters',
+  essayPrompt: '请用中文写一篇 100–200 字的短文，介绍你为什么学习中文，以及学习中文对你有什么帮助。',
+  essayMin: 100, essayUnit: 'characters', essayAim: '100–200',
   speaking: [
     '请用中文介绍一下你自己。',
-    '请用中文说一说你为什么想做志愿者。',
-    '请用中文描述你平时的生活，或者学习/工作的日常安排。',
     '请用中文说一说，如果一个学生学英语有困难，你会怎么帮助他。',
   ],
 },
@@ -208,11 +190,11 @@ function render(){
     <div class="rec-row"><div class="prompt">${i+1}. ${p}</div>
       <button class="btn green rec" data-i="${i}">● Start recording</button>
       <button class="btn red stop" data-i="${i}" style="display:none;">■ Stop</button>
-      <span class="rec-state" id="recstate${i}">Not recorded yet — aim for about 1–2 minutes</span></div>`).join('');
+      <span class="rec-state" id="recstate${i}">Not recorded yet — about 1 minute is plenty</span></div>`).join('');
 
   root.innerHTML = `
     <h1>${L.title}</h1>
-    <p class="lead">${GRADING_NOTE} Take your time, work on your own, and please don't use translators, dictionaries, or AI tools — the point is to learn your real level so students get the right match.</p>
+    <p class="lead">${GRADING_NOTE} This assessment takes about 10 minutes. Work on your own, and please don't use translators, dictionaries, or AI tools — the point is to learn your real level so students get the right match.</p>
     <p class="lead" style="margin-top:8px;">You can take this assessment <b>once</b>. Answers aren't saved until you submit at the bottom, so don't close this page partway through (voice recordings upload immediately).</p>
 
     <div class="sec"><span class="tag">PART 1 OF 4</span><h2>Grammar, Vocabulary &amp; Reading</h2>${mcHTML}</div>
@@ -268,7 +250,7 @@ function wire(){
   essay.oninput = () => {
     const t = essay.value.trim();
     const n = lang === 'chinese' ? t.replace(/\s/g,'').length : (t ? t.split(/\s+/).length : 0);
-    document.getElementById('essayCount').textContent = n + ' ' + L.essayUnit + ' (aim for 200–300)';
+    document.getElementById('essayCount').textContent = n + ' ' + L.essayUnit + ' (aim for ' + L.essayAim + ')';
   };
   root.querySelectorAll('.rec').forEach(b => b.onclick = () => startRec(+b.dataset.i));
   root.querySelectorAll('.stop').forEach(b => b.onclick = () => stopRec());

@@ -151,6 +151,16 @@ async function openApp(id){
     <h1>${esc((a.first_name||'')+' '+(a.last_name||''))} ${a.preferred_name ? `<span style="font-size:1rem;color:var(--ink-soft);font-weight:400;">(${esc(a.preferred_name)})</span>`:''}</h1>
     <span class="pill ${a.status==='submitted'?'warn':a.status==='approved'?'ok':''}">${esc(STATUS_LABELS[a.status]||a.status)}</span>
 
+    ${(() => {
+      const va = ageOf(a.date_of_birth); const out = [];
+      if (va !== null && va < 18) {
+        if (va < 13) out.push('Applicant is under 13 — below the minimum age for volunteers.');
+        if (!a.guardian_consent) out.push('Volunteer is under 18 but the parent/guardian permission box was not ticked.');
+        if (!a.guardian_email) out.push('Volunteer is under 18 and no parent/guardian email is on file.');
+        out.push('Under-18 volunteer (age ' + va + '): match only with students under 18, and consider confirming permission with the guardian by email before approving.');
+      }
+      return out.map(f => `<div class="flag" style="margin-top:12px;">⚠ ${esc(f)}</div>`).join('');
+    })()}
     <div class="panel" style="margin-top:16px;"><h3>Decision</h3>
       <div class="lbl">REVIEWER NOTES (private — never shown to the volunteer or students)</div>
       <textarea id="notes">${esc(a.reviewer_notes)}</textarea>
@@ -171,6 +181,13 @@ async function openApp(id){
       <div><span>Native language:</span>${esc(a.native_language)}</div><div><span>Other languages:</span>${esc(a.other_languages)}</div>
       <div><span>School / work:</span>${esc(a.school_work_status)}</div></div>
       <div class="lbl" style="margin-top:12px;">BIOGRAPHY</div><div class="text">${esc(a.bio)}</div></div>
+
+    ${(ageOf(a.date_of_birth) !== null && ageOf(a.date_of_birth) < 18) || a.guardian_name ? `<div class="panel"><h3>Parent / Guardian</h3><div class="grid">
+      <div><span>Volunteer's age:</span>${ageOf(a.date_of_birth) ?? '—'}</div><div><span>Permission box ticked:</span>${yn(a.guardian_consent)}</div>
+      <div><span>Name:</span>${esc(a.guardian_name)}</div><div><span>Relationship:</span>${esc(a.guardian_relationship)}</div>
+      <div><span>Email:</span>${esc(a.guardian_email)}</div><div><span>Phone:</span>${esc(a.guardian_phone)}</div>
+      <div><span>Permission recorded:</span>${a.guardian_consent_at ? new Date(a.guardian_consent_at).toLocaleString() : '—'}</div></div>
+      <div style="font-size:.78rem;color:var(--ink-soft);margin-top:8px;">A ticked box is not verified consent — confirm with the guardian by email before approving a minor.</div></div>` : ''}
 
     <div class="panel"><h3>Self-Reported Language Background</h3><div class="grid">
       <div><span>English native:</span>${yn(a.english_is_native)}</div><div><span>Years of English:</span>${esc(a.english_years)}</div>

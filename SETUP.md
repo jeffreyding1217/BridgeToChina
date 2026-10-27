@@ -39,6 +39,10 @@ Upload every file in this folder to your web host, all in the same folder. `inde
 - Google Fonts were removed from every page (Google is blocked in China and can stall page loading);
   the site uses each device's built-in fonts instead.
 
+## 2c. After updating the site files, re-run the database setup
+Open `supabase-schema.sql`, paste the whole file into Supabase → SQL Editor → Run again (it is safe to repeat).
+This adds the columns that store a parent/guardian's details for volunteers aged 13–17.
+
 ## 3. Make yourself an admin
 Create a normal volunteer account on your site first, then in the SQL Editor run:
     update profiles set is_admin = true
@@ -48,6 +52,9 @@ Then open `admin.html` (a link also appears on your dashboard).
 ## 4. Before you launch — please review
 - `orientation.html` contains DRAFT safety/boundary/reporting text. Replace anything that doesn't
   match your organization's real policies. This matters most because students may be minors.
+- Volunteers can be 13 or older (under 18 need a parent/guardian's permission); this minimum is enforced
+  in the website's pages, not the database. 13 is the usual online minimum age (US children's-privacy law
+  sets its line at 13). Going younger would need real verified parental consent and legal advice.
 - Students are often minors. The student registration collects a date of birth and, for anyone
   under 18, a guardian's name and email plus a consent tick-box. A tick-box is NOT verified
   consent — the admin page reminds you to confirm with the guardian by email before approving a

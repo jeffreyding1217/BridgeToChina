@@ -82,6 +82,10 @@
   input.invalid, select.invalid, textarea.invalid{ border-color:#d93025 !important; background:#fff5f4 !important; }
   .radio-row.invalid, .scale-row.invalid{ outline:2px solid #d93025; outline-offset:5px; border-radius:10px; }
   .help.sc{ font-weight:600; }
+  .guardian-box{ background:var(--bg-tint); border:1.5px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  .consent-row{ display:flex; gap:12px; align-items:flex-start; padding:10px 0 2px; font-size:.9rem; line-height:1.55; cursor:pointer; }
+  .consent-row input{ margin-top:4px; width:18px; height:18px; flex-shrink:0; }
+  input[type=checkbox].invalid{ outline:2px solid #d93025; outline-offset:2px; }
 </style>
 </head>
 <body>
@@ -222,7 +226,7 @@
           <li>Providing your availability</li>
           <li>Receiving approval from our team</li>
         </ol>
-        <p class="lead" style="margin-bottom:0;">Creating an account does <b>not</b> automatically make you an approved tutor — our team reviews every application before anyone is matched with a student.</p>
+        <p class="lead" style="margin-bottom:0;">Volunteers must be 13 or older; anyone under 18 needs a parent or guardian's permission. Creating an account does <b>not</b> automatically make you an approved tutor — our team reviews every application before anyone is matched with a student.</p>
         <div class="actions" style="justify-content:flex-end;">
           <button class="btn btn-primary" onclick="stepIndex=1; render();">Get Started</button>
         </div>
@@ -243,6 +247,8 @@
       </div>`;
   }
 
+  function ageOfDob(dob){ if(!dob) return null; const d=new Date(dob), n=new Date(); let a=n.getFullYear()-d.getFullYear(); const m=n.getMonth()-d.getMonth(); if(m<0||(m===0&&n.getDate()<d.getDate())) a--; return a; }
+
   function profileStep(){
     const v = (k) => app[k] || '';
     return `
@@ -260,13 +266,26 @@
         </div>
         <div class="two-col">
           <div class="field"><label class="req">Time Zone</label><input type="text" id="f_timezone" placeholder="e.g. GMT-4" value="${v('timezone')}"><div class="help">Used to match your availability with students.</div></div>
-          <div class="field"><label class="req">Date of Birth</label><input type="date" id="f_dob" value="${v('date_of_birth')}"><div class="help">Volunteers must be 18+.</div></div>
+          <div class="field"><label class="req">Date of Birth</label><input type="date" id="f_dob" value="${v('date_of_birth')}"><div class="help">Volunteers must be 13 or older. If you are under 18, a parent or guardian must give permission (you'll be asked below).</div></div>
         </div>
         <div class="two-col">
           <div class="field"><label class="req">Native Language</label><input type="text" id="f_native_language" value="${v('native_language')}"></div>
           <div class="field"><label class="req">Other Languages</label><input type="text" id="f_other_languages" placeholder="e.g. Spanish, French — or write None" value="${v('other_languages')}"></div>
         </div>
         <div class="field"><label class="req">Current School / Work Status</label><input type="text" id="f_school_work" value="${v('school_work_status')}"></div>
+        <div class="guardian-box" id="guardianBox" style="display:${(ageOfDob(app.date_of_birth) !== null && ageOfDob(app.date_of_birth) < 18) ? 'block' : 'none'};">
+          <div style="font-weight:700;margin-bottom:4px;">Parent / guardian permission <span style="color:#d93025">*</span></div>
+          <div class="help" style="margin:0 0 14px;">Because you are under 18, a parent or guardian must agree to you volunteering. We may email them to confirm.</div>
+          <div class="two-col">
+            <div class="field"><label class="req">Parent / guardian name</label><input type="text" id="g_name" value="${v('guardian_name')}"></div>
+            <div class="field"><label class="req">Relationship to you</label><input type="text" id="g_rel" placeholder="e.g. Mother" value="${v('guardian_relationship')}"></div>
+          </div>
+          <div class="two-col">
+            <div class="field"><label class="req">Parent / guardian email</label><input type="text" id="g_email" value="${v('guardian_email')}"></div>
+            <div class="field"><label>Phone (optional)</label><input type="text" id="g_phone" value="${v('guardian_phone')}"></div>
+          </div>
+          <label class="consent-row"><input type="checkbox" id="g_consent" ${app.guardian_consent ? 'checked' : ''}><span>My parent/guardian knows I am applying and agrees to me volunteering with Bridge to China. <span style="color:#d93025">*</span></span></label>
+        </div>
         <div class="field"><label class="req">Short Biography</label><textarea id="f_bio" data-min="3" placeholder="Write at least 3 full sentences about yourself.">${v('bio')}</textarea><div class="help">Shown on your public volunteer profile once approved.</div></div>
         <div id="profileMsg" class="status-msg"></div>
         <div class="actions">
@@ -496,7 +515,8 @@
       const problems = []; let first = null;
       checks.forEach(c => {
         let ok = true, el = null, extra = '';
-        if (c.id) {
+        if (c.checkbox) { el = document.getElementById(c.id); ok = !!(el && el.checked); }
+        else if (c.id) {
           el = document.getElementById(c.id); const v = el ? el.value.trim() : '';
           if (!v) ok = false;
           else if (c.sentences) { const n = sentenceCount(v); if (n < c.sentences) { ok = false; extra = ' (at least ' + c.sentences + ' full sentences — you have ' + n + ')'; } }
@@ -513,6 +533,13 @@
         return false;
       }
       return true;
+    }
+
+    if (step === 'profile') {
+      document.getElementById('f_dob').addEventListener('input', () => {
+        const a = ageOfDob(document.getElementById('f_dob').value);
+        document.getElementById('guardianBox').style.display = (a !== null && a < 18) ? 'block' : 'none';
+      });
     }
 
     if (step === 'whatsnext') {
@@ -577,15 +604,26 @@
 
     if (step === 'profile') {
       document.getElementById('profileContinue').onclick = async () => {
-        if (!validate('profileMsg', [{id:'f_first_name',label:'First name'},{id:'f_last_name',label:'Last name'},{id:'f_preferred_name',label:'Preferred name'},
+        const dobVal = val('f_dob'), age = ageOfDob(dobVal), minor = age !== null && age < 18;
+        const checks = [
+          {id:'f_first_name',label:'First name'},{id:'f_last_name',label:'Last name'},{id:'f_preferred_name',label:'Preferred name'},
           {id:'f_country',label:'Country'},{id:'f_city_region',label:'City / region'},{id:'f_timezone',label:'Time zone'},
-          {id:'f_dob',label:'Date of birth',test:()=>{ const a=ageOf(val('f_dob')); return a<18 ? 'volunteers must be 18 or older' : (a>100 ? 'please check the date' : ''); }},
+          {id:'f_dob',label:'Date of birth',test:()=> age === null ? '' : age < 13 ? 'volunteers must be at least 13 years old' : age > 100 ? 'please check the date' : ''},
           {id:'f_native_language',label:'Native language'},{id:'f_other_languages',label:'Other languages (write None if none)'},
-          {id:'f_school_work',label:'Current school / work status'},{id:'f_bio',label:'Short biography',sentences:3}])) return;
+          {id:'f_school_work',label:'Current school / work status'},{id:'f_bio',label:'Short biography',sentences:3}];
+        if (minor && age >= 13) checks.push(
+          {id:'g_name',label:'Parent / guardian name'},{id:'g_rel',label:'Relationship to you'},
+          {id:'g_email',label:'Parent / guardian email',test:()=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val('g_email')) ? '' : 'enter a valid email'},
+          {id:'g_consent',checkbox:true,label:'Tick the parent/guardian permission box'});
+        if (!validate('profileMsg', checks)) return;
         const fields = {
           first_name: val('f_first_name'), last_name: val('f_last_name'), preferred_name: val('f_preferred_name'),
           country: val('f_country'), city_region: val('f_city_region'), timezone: val('f_timezone'),
-          date_of_birth: val('f_dob') || null, native_language: val('f_native_language'),
+          date_of_birth: val('f_dob') || null,
+          guardian_name: minor ? val('g_name') : null, guardian_relationship: minor ? val('g_rel') : null,
+          guardian_email: minor ? val('g_email') : null, guardian_phone: minor ? val('g_phone') : null,
+          guardian_consent: minor ? document.getElementById('g_consent').checked : null,
+          guardian_consent_at: minor ? new Date().toISOString() : null, native_language: val('f_native_language'),
           other_languages: val('f_other_languages'), school_work_status: val('f_school_work'), bio: val('f_bio'),
         };
         if (await saveApplication(fields, 'profile_complete')) { stepIndex = 3; render(); }

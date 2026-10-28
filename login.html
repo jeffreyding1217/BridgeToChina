@@ -177,6 +177,11 @@
   if (params.get('role') === 'student') setRole('student'); else applyCopy();
   if (params.get('mode') === 'signup') setMode('signup');
 
+  // Only allow going back to one of OUR pages (a plain file name, optionally with a #hash) — never another website.
+  function safeNext(n){
+    return (typeof n === 'string' && /^[A-Za-z0-9_-]+\.html(#[A-Za-z0-9_=-]+)?$/.test(n)) ? n : null;
+  }
+
   function dest(r, isSignup){
     if (r === 'student') return isSignup ? 'student-application.html' : 'student-dashboard.html';
     return isSignup ? 'application.html' : 'volunteer-dashboard.html';
@@ -267,7 +272,7 @@
         if (error) throw error;
         // Send people to the right place based on their ACTUAL account type, not the tab they clicked.
         const { data: prof } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).single();
-        window.location.href = dest((prof && prof.role) || role, false);
+        window.location.href = safeNext(params.get('next')) || dest((prof && prof.role) || role, false);
       }
     } catch (err) {
       const f = friendlyError(err);

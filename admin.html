@@ -68,13 +68,17 @@ function yn(v){ return v === true ? 'Yes' : v === false ? 'No' : '—'; }
 async function init(){
   if (!isConfigured){ root.innerHTML = '<div class="panel">Supabase isn\'t connected yet — see auth-config.js.</div>'; return; }
   const { data:{ session:s } } = await supabaseClient.auth.getSession();
-  if (!s){ location.href = 'login.html'; return; }
+  if (!s){ location.href = 'login.html?next=' + encodeURIComponent('admin.html' + location.hash); return; }
   session = s;
   const { data: me } = await supabaseClient.from('profiles').select('is_admin').eq('id', s.user.id).single();
   if (!me || !me.is_admin){
     root.innerHTML = '<div class="panel"><h3>Not authorized</h3><p>This page is for administrators only. To make an account an admin, run this in the Supabase SQL Editor: <code>update profiles set is_admin = true where id = \'USER-ID\';</code></p></div>'; return;
   }
-  await loadList();
+  // Links in notification emails look like admin.html#app=<id> or admin.html#student=<id>
+  const deep = location.hash.match(/^#(app|student)=([0-9a-fA-F-]{36})$/);
+  if (deep && deep[1] === 'student') { mode = 'students'; await loadStudents(); await openStudent(deep[2].toLowerCase()); }
+  else if (deep) { await loadList(); await openApp(deep[2].toLowerCase()); }
+  else { await loadList(); }
 }
 
 async function loadList(){
@@ -172,7 +176,7 @@ async function openApp(id){
         <button class="btn red" data-set="suspended">Suspend</button>
         <button class="btn ghost" id="saveNotes">Save notes only</button>
       </div>
-      <div style="font-size:.78rem;color:var(--ink-soft);">Note: the volunteer is not automatically emailed yet — status changes appear on their dashboard. Email notifications are a planned next step.</div>
+      <div style="font-size:.78rem;color:var(--ink-soft);">Status changes always show on the volunteer's dashboard. They are only emailed if you switched on applicant emails (see SETUP.md).</div>
     </div>
 
     <div class="panel"><h3>Personal Information</h3><div class="grid">
@@ -313,7 +317,7 @@ async function openStudent(id){
         <button class="btn red" data-set="suspended">Suspend</button>
         <button class="btn ghost" id="saveNotes">Save level &amp; notes only</button>
       </div>
-      <div style="font-size:.78rem;color:var(--ink-soft);">Students are not emailed automatically yet — status shows on their page.</div></div>
+      <div style="font-size:.78rem;color:var(--ink-soft);">Status changes always show on the student's page. They are only emailed if you switched on applicant emails (see SETUP.md).</div></div>
 
     <div class="panel"><h3>About the Student</h3><div class="grid">
       <div><span>Age:</span>${age ?? '—'}</div><div><span>Date of birth:</span>${esc(a.date_of_birth)}</div>

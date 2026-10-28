@@ -235,6 +235,7 @@
         <div>
           <div style="font-weight:700; font-size:0.95rem;">Not yet an approved volunteer</div>
           <div style="font-size:0.85rem; color:var(--ink-soft); margin-top:2px;">Current status: <b>${label}</b>. You'll be matched with students once your application is reviewed and approved.</div>
+          ${status === 'submitted' || status === 'under_review' ? '<div style="font-size:0.82rem; color:var(--ink-soft); margin-top:6px;">Our team reviews each application by hand — reading your writing and listening to your recordings. Your status updates on this page, so check back here.</div>' : ''}
         </div>
         <a href="application.html" class="btn btn-primary" style="padding:9px 18px; border-radius:999px; background:var(--blue); color:#fff; font-size:0.82rem; font-weight:700; white-space:nowrap;">Continue Application</a>
       </div>`;

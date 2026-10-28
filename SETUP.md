@@ -49,6 +49,37 @@ Create a normal volunteer account on your site first, then in the SQL Editor run
     where id = (select id from auth.users where email = 'YOUR-EMAIL');
 Then open `admin.html` (a link also appears on your dashboard).
 
+## 3b. Get an email whenever someone submits (optional but recommended)
+Without this, nothing is sent to you — you'd have to remember to open `admin.html` and look under
+"Needs Review". To be told automatically:
+1. Make a free account at https://resend.com and create an API key (resend.com/api-keys).
+2. Supabase → SQL Editor → paste ALL of `supabase-notifications.sql` → Run.
+3. In a NEW query, type your real values and Run (never save the key into a file or GitHub):
+       insert into private.private_settings (key, value) values
+         ('resend_api_key', 're_YOUR_KEY'),
+         ('admin_email', 'the email you signed up to Resend with'),
+         ('site_url', 'https://jeffreyding1217.github.io/BridgeToChina/'),
+         ('from_email', ''),
+         ('email_applicants', 'false')
+       on conflict (key) do update set value = excluded.value;
+4. Test: select private.send_email('your-admin-email', 'Test', 'Hello');   then check your inbox and spam.
+   If nothing arrives: select id, status_code, left(content::text,300) from net._http_response order by created desc limit 3;
+   shows what Resend answered.
+Notes: Without your own verified email domain, Resend only delivers to the email you registered with
+(fine for admin alerts). Emailing APPLICANTS when you approve/decline needs a domain you own and have
+verified with Resend, then set `from_email` to an address on it and `email_applicants` to 'true'.
+The emails contain only the person's name, rough location/age and a link — no answers or private details.
+
+## How an application gets reviewed
+1. Applicant presses Submit → status becomes "Submitted — Needs Review".
+2. You get an email (if 3b is set up) with a link that opens that applicant in the admin page
+   (you log in as admin first). Otherwise open `admin.html` → "Needs Review".
+3. Read their answers; for assessments, read the writing and play the voice recordings, then enter
+   a writing score and a speaking score. Add private notes.
+4. Click Approve / Needs Additional Training / Not Approved. The applicant sees the new status on
+   their dashboard (and gets an email only if applicant emails are switched on).
+5. Under-18s: confirm with the parent/guardian by email before approving.
+
 ## 4. Before you launch — please review
 - `orientation.html` contains DRAFT safety/boundary/reporting text. Replace anything that doesn't
   match your organization's real policies. This matters most because students may be minors.

@@ -134,7 +134,7 @@
       row = res.data;
       if (!row) {
         // Do NOT carry on pretending — answers would be lost. Say so clearly.
-        wrap.innerHTML = '<div class="card"><h1>We couldn\'t open your application</h1><p class="lead">Your account exists, but we could not create or load its application record, so anything you type would not be saved.</p><div class="status-msg show error" id="initErr"></div><p class="lead" style="margin-top:16px;">Please try reloading the page. If it keeps happening, the site owner needs to re-run <code>supabase-schema.sql</code> in Supabase, and you may need to sign up again with a fresh account.</p></div>';
+        wrap.innerHTML = '<div class="card"><h1>We couldn\'t open your application</h1><p class="lead">Your account exists, but we could not create or load its application record, so anything you type would not be saved.</p><div class="status-msg show error" id="initErr"></div><p class="lead" style="margin-top:16px;">Please try reloading the page. If it keeps happening, the site owner needs to re-run <code>1-database-setup.sql</code> in Supabase, and you may need to sign up again with a fresh account.</p></div>';
         document.getElementById('initErr').textContent = (res.error && res.error.message) || 'Unknown error';
         return;
       }

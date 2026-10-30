@@ -1,105 +1,54 @@
-# Bridge to China — setup guide
+# Bridge to China — START HERE
 
-## 1. Put the site online
-Upload every file in this folder to your web host, all in the same folder. `index.html` is the homepage.
+You only ever do these 5 things. Each one is copy → paste → click.
 
-## 2. Turn on real accounts (about 10 minutes, free)
-1. Create a free project at https://supabase.com
-2. Settings → API → copy the **Project URL** and **anon public** key into `auth-config.js`.
-3. SQL Editor → New query → paste the ENTIRE contents of `supabase-schema.sql` → Run.
-   (This creates the tables, the private voice-recordings storage bucket, and the security
-   guards that stop volunteers from approving themselves. Don't skip the guards.)
-3b. If you already ran the schema earlier and sign-up shows 'row-level security policy' errors, run
-   `supabase-fix-signup.sql` once the same way (SQL Editor → paste → Run). New projects don't need it —
-   it's already included at the bottom of `supabase-schema.sql`.
-4. Authentication → Providers → Email → keep **Confirm email ON** if you want real email
-   verification (recommended — the application requires it). While testing you can turn it off.
-   **REQUIRED so the email link doesn't 404:** Authentication → URL Configuration →
-   - Site URL = your site's real address, e.g. https://YOURNAME.github.io/YOUR-REPO/
-     (copy it from GitHub → Settings → Pages → "Your site is live at"). If you rename the repo
-     later, update this again.
-   - Redirect URLs → Add URL → https://YOURNAME.github.io/YOUR-REPO/**   (note the two stars at the end)
-   For this project: Site URL  https://jeffreyding1217.github.io/BridgeToChina/
-                     Redirect  https://jeffreyding1217.github.io/BridgeToChina/**
-   The confirmation email sends people to `confirmed.html` on your site.
+## 1. Put the website files online
+Unzip this folder on your computer. Upload EVERYTHING inside it to your GitHub repository
+(replace the old files) and click "Commit changes". Wait 1–2 minutes.
+Your site: https://jeffreyding1217.github.io/BridgeToChina/
 
-## 2b. IMPORTANT for students in mainland China (do this before launch)
-- **Download the Supabase library and host it yourself.** Open
-  https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js , save the page as
-  `supabase.js`, and upload it next to your other files. Every page loads this local copy first and
-  only falls back to a public CDN, which may be slow or blocked in China.
-- **Test from inside China.** Ask a friend or student in mainland China to open your site and
-  create a student account on their phone, on mobile data and on home wifi. I could not verify that
-  Supabase's servers are reliably reachable from China. If sign-up fails or is very slow there,
-  student accounts will need a different backend (for example one hosted in China).
-- **Set up real email sending.** Supabase's built-in email sender is only meant for testing: it is
-  heavily rate-limited, and verification emails often don't reach QQ / 163 / 126 mailboxes. Before
-  launch, connect your own email service (Supabase → Authentication → SMTP Settings) and test with a
-  QQ and a 163 address. If students can't receive the verification email, they can't register.
-- Google Fonts were removed from every page (Google is blocked in China and can stall page loading);
-  the site uses each device's built-in fonts instead.
+## 2. Set up the database  (file: 1-database-setup.sql)
+Supabase → SQL Editor → New query → paste the whole file → Run.
+Safe to repeat any time you get a new version.
 
-## 2c. After updating the site files, re-run the database setup
-Open `supabase-schema.sql`, paste the whole file into Supabase → SQL Editor → Run again (it is safe to repeat).
-This adds the columns that store a parent/guardian's details for volunteers aged 13–17.
+## 3. Turn on email alerts  (file: 2-email-alerts.sql)
+Paste it into a new query, replace the Resend-key placeholder near the bottom with your real
+Resend key (starts with re_), then Run. A test email is sent to jeffreyding1217@gmail.com.
+Never save the key in a file or put it on GitHub.
 
-## 3. Make yourself an admin
-Create a normal volunteer account on your site first, then in the SQL Editor run:
-    update profiles set is_admin = true
-    where id = (select id from auth.users where email = 'YOUR-EMAIL');
-Then open `admin.html` (a link also appears on your dashboard).
+## 4. Make yourself an admin  (file: 3-make-me-admin.sql)
+First sign up on the website with jeffreyding1217@gmail.com and click the verification link.
+Then paste file 3 into a new query and Run. The result says in plain English whether it worked.
 
-## 3b. Get an email whenever someone submits (optional but recommended)
-Without this, nothing is sent to you — you'd have to remember to open `admin.html` and look under
-"Needs Review". To be told automatically:
-1. Make a free account at https://resend.com and create an API key (resend.com/api-keys).
-2. Supabase → SQL Editor → paste ALL of `supabase-notifications.sql` → Run.
-3. In a NEW query, type your real values and Run (never save the key into a file or GitHub):
-       insert into private.private_settings (key, value) values
-         ('resend_api_key', 're_YOUR_KEY'),
-         ('admin_email', 'the email you signed up to Resend with'),
-         ('site_url', 'https://jeffreyding1217.github.io/BridgeToChina/'),
-         ('from_email', ''),
-         ('email_applicants', 'false')
-       on conflict (key) do update set value = excluded.value;
-4. Test: select private.send_email('your-admin-email', 'Test', 'Hello');   then check your inbox and spam.
-   If nothing arrives: select id, status_code, left(content::text,300) from net._http_response order by created desc limit 3;
-   shows what Resend answered.
-Notes: Without your own verified email domain, Resend only delivers to the email you registered with
-(fine for admin alerts). Emailing APPLICANTS when you approve/decline needs a domain you own and have
-verified with Resend, then set `from_email` to an address on it and `email_applicants` to 'true'.
-The emails contain only the person's name, rough location/age and a link — no answers or private details.
+## 5. Supabase email settings (once)
+Authentication → URL Configuration:
+- Site URL: https://jeffreyding1217.github.io/BridgeToChina/
+- Redirect URLs → Add: https://jeffreyding1217.github.io/BridgeToChina/**
+Also copy the file supabase.js next to your pages if students in China will use the site
+(see "Students in China" below).
 
+---
 ## How an application gets reviewed
-1. Applicant presses Submit → status becomes "Submitted — Needs Review".
-2. You get an email (if 3b is set up) with a link that opens that applicant in the admin page
-   (you log in as admin first). Otherwise open `admin.html` → "Needs Review".
-3. Read their answers; for assessments, read the writing and play the voice recordings, then enter
-   a writing score and a speaking score. Add private notes.
-4. Click Approve / Needs Additional Training / Not Approved. The applicant sees the new status on
-   their dashboard (and gets an email only if applicant emails are switched on).
-5. Under-18s: confirm with the parent/guardian by email before approving.
+1. Applicant presses Submit → you get an email with a link to that person.
+2. Click it, log in, read their answers, play their recordings, enter writing + speaking scores.
+3. Click Approve / Needs Additional Training / Not Approved. They see the new status on their dashboard.
+4. Under-18s: confirm with the parent/guardian by email before approving.
 
-## 4. Before you launch — please review
-- `orientation.html` contains DRAFT safety/boundary/reporting text. Replace anything that doesn't
-  match your organization's real policies. This matters most because students may be minors.
-- Volunteers can be 13 or older (under 18 need a parent/guardian's permission); this minimum is enforced
-  in the website's pages, not the database. 13 is the usual online minimum age (US children's-privacy law
-  sets its line at 13). Going younger would need real verified parental consent and legal advice.
-- Students are often minors. The student registration collects a date of birth and, for anyone
-  under 18, a guardian's name and email plus a consent tick-box. A tick-box is NOT verified
-  consent — the admin page reminds you to confirm with the guardian by email before approving a
-  minor. Get advice on what China's rules on children's personal information (and any rules where
-  your volunteers live) require of you.
-- Consider having legal/child-safeguarding advice on background checks and data privacy
-  (you'll be storing applicants' personal info, birthdates, and voice recordings).
-- Test the whole flow once yourself: sign up → verify → application → assessments → orientation →
-  submit → approve in admin.
+## Students in China (important)
+- Download https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js , save it as
+  `supabase.js`, and upload it next to your pages (a public CDN may be slow or blocked in China).
+- Test sign-up from a phone inside mainland China before you launch. I could not verify Supabase is reliably reachable there.
+- Supabase's built-in email sender is only for testing and verification emails often don't reach
+  QQ/163 mailboxes. Before launch connect your own email service (Supabase → Authentication → SMTP).
+
+## Before you launch — please review
+- `orientation.html` contains DRAFT safety text. Replace anything that doesn't match your real policies.
+- Volunteers can be 13+ (under 18 need a parent/guardian's permission). A tick-box is not verified consent;
+  the admin page reminds you to confirm by email. Get advice on children's-data rules (including China's).
+- Emailing applicants when you approve/decline needs a domain you own (see the comments in file 2).
 
 ## What's real vs. not yet built
-Real (volunteers AND students, each with their own pipeline): signup, email verification, application wizard, English + Chinese assessments (auto-scored
-multiple choice + listening, plus writing and voice recordings for human review), orientation quiz,
-availability, submit, admin review/approve/reject/retake, security guards.
-Not yet built: matching students with volunteers (an admin can see both sides but there is no match screen yet), automatic emails (status changes only appear on the dashboard), server-side
-grading, student matching, lesson scheduling, real hours tracking/certificates, application
-history log, profile photo upload.
+Real: sign-up, email verification, application wizards for volunteers and students, English + Chinese
+assessments, orientation, availability, admin review, email alerts to you.
+Not yet built: matching students with volunteers, lesson scheduling, real hours tracking/certificates,
+profile photo upload, server-side grading.

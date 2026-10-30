@@ -244,7 +244,7 @@
     try {
       if (mode === 'signup') {
         const fullName = document.getElementById('nameInput').value.trim();
-        // The role + name travel with the account; a database trigger (supabase-fix-signup.sql)
+        // The role + name travel with the account; a database trigger (included in 1-database-setup.sql)
         // creates the profile and application rows, so this works even before email is confirmed.
         const { data, error } = await supabaseClient.auth.signUp({
           email, password, options: { data: { full_name: fullName, role }, emailRedirectTo: REDIRECT_TO },

@@ -103,6 +103,7 @@
 </div>
 
 <script src="auth-config.js"></script>
+<script src="chat.js"></script>
 <script>
   const LABELS = {
     account_created:'Just started 刚开始', email_verified:'Email verified 邮箱已验证', profile_complete:'In progress 进行中', goals_complete:'In progress 进行中',
@@ -145,6 +146,12 @@
   }
   const MEET_RE = /^https:\/\/([a-z0-9-]+\.)*(voovmeeting\.com|meeting\.tencent\.com|wemeet\.qq\.com)(\/\S*)?$/i;
   function plain(html){ const d = document.getElementById('lessonsBox'); d.innerHTML = '<div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;line-height:1.7;"></div>'; d.firstChild.innerHTML = html; }
+  async function loadHistory(){
+    const { data, error } = await supabaseClient.rpc('my_lesson_history');
+    if (error || !data || !data.length) return;
+    const h = document.getElementById('lessonsBox');
+    h.insertAdjacentHTML('beforeend', '<div class="card vcard" style="margin-top:16px;"><h3>Lesson history · 课程记录</h3><div class="vmeta">' + data.map(x => esc(x.lesson_date) + ' · ' + esc(x.minutes) + ' min · ' + esc(x.topic)).join('<br>') + '</div></div>');
+  }
   async function loadVolunteerMatch(status){
     if (status !== 'approved') { plain('You will be matched with a volunteer after your registration is approved.<br>你的注册通过审核后，我们会为你匹配志愿者。'); return; }
     const { data, error } = await supabaseClient.rpc('my_matches');
@@ -162,8 +169,11 @@
         ${m.meeting_password ? 'Password · 密码: <b>' + esc(m.meeting_password) + '</b><br>' : ''}
         </div>
         ${ok ? '<a class="joinbtn" href="' + esc(m.meeting_link) + '" target="_blank" rel="noopener noreferrer">Join lesson on VooV · 加入课程</a>'
-             : '<div class="vmeta" style="margin-top:12px;">Your volunteer has not added the meeting link yet. 你的志愿者还没有添加会议链接。</div>'}</div>`;
+             : '<div class="vmeta" style="margin-top:12px;">Your volunteer has not added the meeting link yet. 你的志愿者还没有添加会议链接。</div>'}
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);"><b>Messages · 消息</b><div id="chatS" style="margin-top:8px;"></div></div></div>`;
     }).join('');
+    mountChat(document.getElementById('chatS'), list[0].match_id, supabaseClient, 'For your safety, do not share phone numbers, emails or links. 为了安全，请不要分享电话、邮箱或链接。');
+    loadHistory();
   }
 
   document.getElementById('logoutLink').addEventListener('click', async (e) => {

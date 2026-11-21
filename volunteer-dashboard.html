@@ -133,10 +133,9 @@
   <div id="matchesBox" style="margin-bottom:34px;"><div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;">Loading…</div></div>
 
   <div class="bottom-grid">
-    <div class="card hours-card">
-      <div style="font-size:0.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:6px;">VOLUNTEER HOURS &amp; CERTIFICATES</div>
-      <div style="font-size:0.9rem; color:var(--ink); line-height:1.6;">Hour tracking and certificates are not available yet. Nothing is being counted for you at the moment.</div>
-      <div style="font-size:0.82rem; color:var(--ink-soft); margin-top:8px;">When this is switched on, completed sessions will be listed here and approved by an administrator.</div>
+    <div class="card hours-card" id="hoursCard">
+      <div style="font-size:0.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:6px;">VOLUNTEER HOURS &amp; CERTIFICATE</div>
+      <div id="hoursBody" style="font-size:0.9rem; color:var(--ink); line-height:1.6;">Hours appear here after your lesson reports are approved.</div>
     </div>
     <div class="card prep-card">
       <div style="font-weight:700; margin-bottom:6px;">Need to prep offline?</div>
@@ -147,6 +146,7 @@
 </div>
 
 <script src="auth-config.js"></script>
+<script src="chat.js"></script>
 <script>
   async function loadVolunteer(){
     if (!isConfigured) {
@@ -192,6 +192,19 @@
     await renderStats(st);
   }
 
+  async function loadHoursCard(){
+    const el = document.getElementById('hoursBody'); if (!el || !isConfigured) return;
+    const { data, error } = await supabaseClient.rpc('my_hours');
+    if (error || !data) { el.textContent = 'Hours tracking is not set up yet.'; return; }
+    const h = x => (x / 60).toFixed(1).replace(/\.0$/, '');
+    let html = '<div style="font-size:1.6rem;font-weight:800;color:var(--blue-deep);">' + h(data.approved_minutes) + ' hours</div><div style="color:var(--ink-soft);font-size:.82rem;">approved by an administrator' + (data.approved_lessons ? ' · ' + data.approved_lessons + ' lesson' + (data.approved_lessons === 1 ? '' : 's') : '') + '</div>';
+    if (data.pending_minutes > 0) html += '<div style="margin-top:6px;font-size:.84rem;">' + h(data.pending_minutes) + ' hours waiting for approval</div>';
+    if (data.approved_minutes > 0) html += '<a href="certificate.html" target="_blank" style="display:inline-block;margin-top:10px;font-weight:700;">View / print certificate →</a>';
+    else html += '<div style="margin-top:6px;font-size:.82rem;color:var(--ink-soft);">A certificate becomes available once you have approved hours.</div>';
+    const rej = (data.reports || []).filter(r => r.status === 'rejected');
+    if (rej.length) html += '<div style="margin-top:8px;font-size:.8rem;color:#a3312a;">' + rej.length + ' report(s) were not approved' + (rej[0].admin_note ? ': ' + esc(rej[0].admin_note) : '') + '</div>';
+    el.innerHTML = html;
+  }
   function esc(t){ return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   const MEET_RE = /^https:\/\/([a-z0-9-]+\.)*(voovmeeting\.com|meeting\.tencent\.com|wemeet\.qq\.com)(\/\S*)?$/i;
   const box = () => document.getElementById('matchesBox');
@@ -213,6 +226,7 @@
       return;
     }
     const list = data || [];
+    loadHoursCard();
     row.innerHTML = chip('Approved', 'Your application status') + chip(String(list.length), list.length === 1 ? 'Student you teach' : 'Students you teach');
     if (!list.length) { note('You have not been matched with a student yet. Our team will match you, and the student will appear here. Nobody has been assigned to you so far.'); return; }
     box().innerHTML = list.map((m, i) => matchCard(m, i)).join('');
@@ -238,10 +252,39 @@
       </div>
       <div style="margin-top:12px;"><button class="btn btn-primary" id="mf_save${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save meeting details</button></div>
       <div class="mf-msg" id="mf_msg${i}"></div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);"><b>Messages</b><div id="chat${i}" style="margin-top:8px;"></div></div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);"><b>Report a lesson you taught</b>
+        <div class="match-form">
+          <div><label>Lesson date</label><input type="date" id="lr_date${i}"></div>
+          <div><label>Length (minutes, 10–120)</label><input type="number" id="lr_min${i}" min="10" max="120" value="30"></div>
+          <div><label>Topic</label><input type="text" id="lr_topic${i}" maxlength="120" placeholder="e.g. Lesson 0 – introduction"></div>
+          <div><label>Did the student attend?</label><select id="lr_att${i}" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg-tint);"><option value="true">Yes</option><option value="false">No (no hours counted)</option></select></div>
+        </div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin:10px 0 4px;">What you covered and how it went (at least 3 sentences)</label>
+        <textarea id="lr_sum${i}" rows="3" maxlength="2000" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;background:var(--bg-tint);"></textarea>
+        <div style="margin-top:10px;"><button id="lr_btn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">Submit report</button></div>
+        <div class="mf-msg" id="lr_msg${i}"></div>
+      </div>
     </div>`;
   }
 
+  function sentences(t){ return (t.match(/[^.!?。！？]{6,}[.!?。！？]/g) || []).length; }
   function wireMatch(m, i){
+    mountChat(document.getElementById('chat' + i), m.match_id, supabaseClient, m.other_is_minor ? 'This student is under 18: emails, phone numbers and links are blocked. Keep everything about lessons on this page and VooV.' : 'Messages are visible to program administrators.');
+    const today = new Date(); document.getElementById('lr_date' + i).max = today.toISOString().slice(0,10);
+    document.getElementById('lr_btn' + i).onclick = async () => {
+      const g = id => document.getElementById(id + i).value.trim(), msg = document.getElementById('lr_msg' + i);
+      const bad = t => { msg.className = 'mf-msg err'; msg.textContent = t; };
+      if (!g('lr_date')) return bad('Choose the lesson date.');
+      const mins = parseInt(g('lr_min'), 10); if (!(mins >= 10 && mins <= 120)) return bad('Length must be 10 to 120 minutes.');
+      if (g('lr_topic').length < 2) return bad('Add the lesson topic.');
+      if (sentences(g('lr_sum')) < 3) return bad('Please write at least 3 sentences about the lesson.');
+      const { error } = await supabaseClient.rpc('submit_lesson_report', { p_match_id: m.match_id, p_date: g('lr_date'), p_minutes: mins, p_topic: g('lr_topic'), p_summary: g('lr_sum'), p_attended: g('lr_att') === 'true' });
+      if (error) return bad(/submit_lesson_report|function/i.test(error.message || '') ? 'Lesson reports are not set up yet. The site owner needs to run QUERY 7.' : error.message);
+      msg.className = 'mf-msg ok'; msg.textContent = 'Submitted. An administrator will review it before the hours count.';
+      document.getElementById('lr_sum' + i).value = ''; document.getElementById('lr_topic' + i).value = '';
+      loadHoursCard();
+    };
     document.getElementById('mf_save' + i).onclick = async () => {
       const g = id => document.getElementById(id + i).value.trim();
       const msg = document.getElementById('mf_msg' + i);

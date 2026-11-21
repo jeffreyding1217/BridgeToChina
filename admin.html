@@ -64,12 +64,12 @@ const root = document.getElementById('root');
 let apps = [], students = [], mode = 'volunteers', filter = 'submitted', session;
 
 function modeToggle(){
-  return `<div class="filters" style="margin:0 0 6px;"><div class="chip ${mode==='volunteers'?'on':''}" data-mode="volunteers">Volunteers</div><div class="chip ${mode==='students'?'on':''}" data-mode="students">Students</div><div class="chip ${mode==='matches'?'on':''}" data-mode="matches">Matches</div></div>`;
+  return `<div class="filters" style="margin:0 0 6px;"><div class="chip ${mode==='volunteers'?'on':''}" data-mode="volunteers">Volunteers</div><div class="chip ${mode==='students'?'on':''}" data-mode="students">Students</div><div class="chip ${mode==='matches'?'on':''}" data-mode="matches">Matches</div><div class="chip ${mode==='hours'?'on':''}" data-mode="hours">Hours</div></div>`;
 }
 function wireMode(){
   root.querySelectorAll('[data-mode]').forEach(c => c.onclick = () => {
     mode = c.dataset.mode; filter = 'submitted';
-    if (mode === 'students') loadStudents(); else if (mode === 'matches') loadMatches(); else loadList();
+    if (mode === 'students') loadStudents(); else if (mode === 'matches') loadMatches(); else if (mode === 'hours') loadHours(); else loadList();
   });
 }
 function esc(t){ return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -497,8 +497,15 @@ function openMatch(id){
       <p style="font-size:.8rem;color:var(--ink-soft);">Only VooV Meeting / Tencent Meeting links are accepted (voovmeeting.com, meeting.tencent.com, wemeet.qq.com). The volunteer can also fill these in themselves from their dashboard. "Paused" or "ended" hides the match from both people.</p>
       <button class="btn" id="eSave">Save</button>
       <button class="btn red" id="eDelete">Delete match</button>
-    </div>`;
+    </div>
+    <div class="panel"><h3>Messages between them (read-only, for moderation)</h3><div id="eMsgs" style="font-size:.88rem;line-height:1.6;">Loading…</div></div>`;
   wireMode();
+  supabaseClient.from('messages').select('sender_id, body, created_at').eq('match_id', id).order('created_at').limit(300).then(({ data, error }) => {
+    const box = document.getElementById('eMsgs'); if (!box) return;
+    if (error){ box.textContent = /relation|messages/.test(error.message || '') ? 'Messaging is not set up yet (run QUERY 7).' : 'Could not load: ' + error.message; return; }
+    if (!data.length){ box.textContent = 'No messages yet.'; return; }
+    box.innerHTML = data.map(x => `<div style="margin-bottom:6px;"><b>${x.sender_id === m.volunteer_id ? 'Volunteer' : 'Student'}</b> <span style="color:var(--ink-soft);font-size:.78rem;">${esc(new Date(x.created_at).toLocaleString())}</span><br>${esc(x.body)}</div>`).join('');
+  });
   document.getElementById('mBack').onclick = () => renderMatches();
   document.getElementById('eSave').onclick = async () => {
     const link = document.getElementById('eLink').value.trim();
@@ -516,6 +523,50 @@ function openMatch(id){
     if (error){ alert('Could not delete: ' + matchError(error)); return; }
     matches = matches.filter(x => x.id !== id); renderMatches();
   };
+}
+
+let reports = [], hrFilter = 'pending';
+async function loadHours(){
+  const [r, a] = await Promise.all([
+    supabaseClient.from('lesson_reports').select('*').order('created_at', { ascending: false }),
+    supabaseClient.from('applications').select('id, first_name, last_name, preferred_name'),
+  ]);
+  const err = r.error || a.error;
+  if (err){
+    root.innerHTML = modeToggle() + '<div class="panel"><h3>Could not load hours</h3><p></p></div>';
+    root.querySelector('.panel p').textContent = /relation|lesson_reports/.test(err.message || '') ? 'The lesson reports table does not exist yet. Run QUERY 7 in Supabase first.' : err.message;
+    wireMode(); return;
+  }
+  reports = r.data || []; apps = a.data || [];
+  renderHours();
+}
+function renderHours(){
+  const shown = reports.filter(x => x.status === hrFilter);
+  const nm = id => { const v = apps.find(x => x.id === id); return v ? pname(v) : '(unknown)'; };
+  const counts = st => reports.filter(x => x.status === st).length;
+  root.innerHTML = modeToggle() + `<h1>Volunteer hours</h1>
+    <p style="color:var(--ink-soft);margin:0 0 12px;">Volunteers submit a report after each lesson. Hours only count toward certificates once you approve them. Check that the lesson really happened before approving.</p>
+    <div class="filters">${['pending','approved','rejected'].map(st => `<div class="chip ${hrFilter === st ? 'on' : ''}" data-hr="${st}">${st[0].toUpperCase() + st.slice(1)} (${counts(st)})</div>`).join('')}</div>
+    ${shown.length ? shown.map(x => `<div class="panel" data-rid="${x.id}">
+      <b>${esc(nm(x.volunteer_id))}</b> · ${esc(x.lesson_date)} · <input type="number" min="10" max="120" value="${x.minutes}" style="width:70px;" class="rMin"> min · ${x.student_attended ? 'student attended' : '<span style="color:#a3312a">student did NOT attend (no hours)</span>'}
+      <div style="margin:6px 0;"><b>Topic:</b> ${esc(x.topic)}</div>
+      <div style="margin:6px 0;white-space:pre-wrap;">${esc(x.summary)}</div>
+      <input type="text" class="rNote" placeholder="Note to volunteer (optional)" value="${esc(x.admin_note)}" style="width:100%;margin-bottom:8px;">
+      <button class="btn rOk">Approve</button> <button class="btn red rNo">Reject</button> ${x.status !== 'pending' ? '<button class="btn ghost rBack">Back to pending</button>' : ''}
+    </div>`).join('') : '<div class="panel">Nothing here.</div>'}`;
+  wireMode();
+  root.querySelectorAll('[data-hr]').forEach(c => c.onclick = () => { hrFilter = c.dataset.hr; renderHours(); });
+  root.querySelectorAll('[data-rid]').forEach(card => {
+    const id = card.dataset.rid;
+    const act = async st => {
+      const { error } = await supabaseClient.rpc('review_lesson_report', { p_id: id, p_status: st, p_note: card.querySelector('.rNote').value, p_minutes: parseInt(card.querySelector('.rMin').value, 10) || null });
+      if (error){ alert('Could not save: ' + error.message); return; }
+      loadHours();
+    };
+    card.querySelector('.rOk').onclick = () => act('approved');
+    card.querySelector('.rNo').onclick = () => act('rejected');
+    const b = card.querySelector('.rBack'); if (b) b.onclick = () => act('pending');
+  });
 }
 
 init();

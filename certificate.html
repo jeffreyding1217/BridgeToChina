@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volunteer Service Certificate · Bridge to China</title>
+<script src="supabase.js"></script>
+<script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
+<style>
+ body{margin:0;background:#eef3f8;font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#1d2b3a;}
+ .bar{padding:14px;text-align:center;} .bar button,.bar a{padding:10px 22px;border-radius:999px;border:none;background:#2563a8;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;font-size:.95rem;}
+ .cert{max-width:860px;margin:10px auto 40px;background:#fff;border:10px double #2563a8;padding:56px 48px;text-align:center;box-sizing:border-box;}
+ .cert h1{font-family:Georgia,serif;font-size:2.2rem;margin:0 0 6px;color:#17406f;} .small{color:#5b6b7c;font-size:.9rem;}
+ .name{font-family:Georgia,serif;font-size:2rem;margin:24px 0 8px;border-bottom:2px solid #2f9e6b;display:inline-block;padding:0 24px 6px;}
+ .hrs{font-size:3rem;font-weight:800;color:#2f9e6b;margin:10px 0 0;}
+ .note{margin-top:34px;font-size:.78rem;color:#5b6b7c;line-height:1.6;}
+ #msg{max-width:600px;margin:40px auto;text-align:center;color:#5b6b7c;padding:0 16px;}
+ @media print{ body{background:#fff;} .bar{display:none;} .cert{margin:0;max-width:none;} }
+</style></head><body>
+<div class="bar"><button onclick="window.print()">Print / Save as PDF</button> <a href="volunteer-dashboard.html" style="background:#fff;color:#2563a8;border:1.5px solid #2563a8;">Back</a></div>
+<div id="msg">Loading…</div>
+<div class="cert" id="cert" style="display:none">
+  <div class="small">BRIDGE TO CHINA</div>
+  <h1>Certificate of Volunteer Service</h1>
+  <div class="small">This certifies that</div>
+  <div class="name" id="cName"></div>
+  <div class="small">volunteered as an online English conversation tutor for students in China, completing</div>
+  <div class="hrs" id="cHours"></div>
+  <div class="small" id="cLessons"></div>
+  <div class="small" id="cRange" style="margin-top:6px;"></div>
+  <div class="note" id="cNote"></div>
+</div>
+<script src="auth-config.js"></script>
+<script>
+(async () => {
+  const msg = document.getElementById('msg');
+  if (!isConfigured) { msg.textContent = 'Not connected to the database yet.'; return; }
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { location.href = 'login.html?next=certificate.html'; return; }
+  const { data, error } = await supabaseClient.rpc('my_hours');
+  if (error || !data) { msg.textContent = 'Could not load your hours. The site owner may need to run QUERY 7.'; return; }
+  if (!(data.approved_minutes > 0)) { msg.textContent = 'You have no approved volunteer hours yet. A certificate becomes available after an administrator approves your lesson reports.'; return; }
+  const hrs = data.approved_minutes / 60;
+  const fmt = d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('cName').textContent = data.volunteer_name || session.user.email;
+  document.getElementById('cHours').textContent = hrs.toFixed(1).replace(/\.0$/, '') + (hrs === 1 ? ' hour' : ' hours');
+  document.getElementById('cLessons').textContent = data.approved_lessons + (data.approved_lessons === 1 ? ' lesson' : ' lessons') + ' reported and approved by program administrators';
+  document.getElementById('cRange').textContent = data.first_date ? 'From ' + fmt(data.first_date) + ' to ' + fmt(data.last_date) : '';
+  document.getElementById('cNote').textContent = 'Issued ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + '. Hours are based on lesson reports reviewed by Bridge to China administrators. This certificate reflects the records at the time of issue.';
+  msg.style.display = 'none'; document.getElementById('cert').style.display = 'block';
+})();
+</script></body></html>

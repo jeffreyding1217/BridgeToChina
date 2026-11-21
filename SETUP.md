@@ -62,3 +62,13 @@ profile photo upload, server-side grading.
 5. The volunteer adds the VooV link, meeting ID, password and lesson time on their dashboard; the student then sees a Join button.
 
 Dashboards show only real data. With no matches they show an empty state.
+
+## Lessons, hours, certificates and messages
+
+1. Run **QUERY 7** from `SQL-EDITOR-QUERIES.md` (after QUERY 6).
+2. Upload the new/updated files: `chat.js`, `certificate.html`, `admin.html`, `volunteer-dashboard.html`, `student-dashboard.html`.
+3. Volunteers submit a report after each lesson (dashboard → their student's card). You approve it in **Admin → Hours**; only approved hours count.
+4. The volunteer's certificate page (`certificate.html`) shows only approved hours and prints / saves as PDF.
+5. Matched pairs can message each other on their dashboards. You can read every conversation in **Admin → Matches → open a match**. For under-18 students, emails, phone numbers and links are blocked.
+
+Still not built: automatic email reminders/notifications, profile photo upload, server-side grading of assessments.

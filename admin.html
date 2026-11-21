@@ -39,6 +39,13 @@
   .flag{ background:#fdf1e0; border-left:4px solid var(--amber); padding:10px 14px; border-radius:8px; font-size:.85rem; color:#7a5314; margin:8px 0; line-height:1.55; }
   audio{ width:100%; margin:4px 0 12px; }
   @media(max-width:760px){ .grid{ grid-template-columns:1fr; } .scores{ grid-template-columns:repeat(3,1fr); } }
+  select, input[type=text]{ width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:9px; font-family:inherit; font-size:.88rem; background:var(--tint); }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:14px 22px; }
+  .sidebyside{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0; }
+  .sidebyside > div{ background:var(--tint); border-radius:10px; padding:12px 14px; font-size:.84rem; line-height:1.7; }
+  .sidebyside b{ display:block; font-family:'Fraunces',serif; margin-bottom:4px; color:var(--blue-deep); }
+  .block{ background:#fdecea; border-left:4px solid #c0392b; padding:10px 14px; border-radius:8px; font-size:.85rem; color:#8a2a22; margin:8px 0; line-height:1.55; }
+  @media(max-width:760px){ .two, .sidebyside{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -57,10 +64,13 @@ const root = document.getElementById('root');
 let apps = [], students = [], mode = 'volunteers', filter = 'submitted', session;
 
 function modeToggle(){
-  return `<div class="filters" style="margin:0 0 6px;"><div class="chip ${mode==='volunteers'?'on':''}" data-mode="volunteers">Volunteers</div><div class="chip ${mode==='students'?'on':''}" data-mode="students">Students</div></div>`;
+  return `<div class="filters" style="margin:0 0 6px;"><div class="chip ${mode==='volunteers'?'on':''}" data-mode="volunteers">Volunteers</div><div class="chip ${mode==='students'?'on':''}" data-mode="students">Students</div><div class="chip ${mode==='matches'?'on':''}" data-mode="matches">Matches</div></div>`;
 }
 function wireMode(){
-  root.querySelectorAll('[data-mode]').forEach(c => c.onclick = () => { mode = c.dataset.mode; filter = 'submitted'; mode === 'students' ? loadStudents() : loadList(); });
+  root.querySelectorAll('[data-mode]').forEach(c => c.onclick = () => {
+    mode = c.dataset.mode; filter = 'submitted';
+    if (mode === 'students') loadStudents(); else if (mode === 'matches') loadMatches(); else loadList();
+  });
 }
 function esc(t){ return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function yn(v){ return v === true ? 'Yes' : v === false ? 'No' : '—'; }
@@ -363,6 +373,148 @@ async function openStudent(id){
   if (rt) rt.onclick = async () => {
     if (!confirm('Erase this student\'s placement results so they can retake the test?')) return;
     if (await patch({ placement_score:null, placement_breakdown:null, placement_answers:null, placement_writing:null, suggested_level:null, status:'consent_complete' })) openStudent(id);
+  };
+}
+
+/* ====================== MATCHES ====================== */
+let matches = [];
+const MEET_RE = /^https:\/\/([a-z0-9-]+\.)*(voovmeeting\.com|meeting\.tencent\.com|wemeet\.qq\.com)(\/\S*)?$/i;
+const pname = a => ((a.preferred_name || '').trim() || ((a.first_name || '') + ' ' + (a.last_name || '')).trim() || '(no name)');
+const levelGroup = l => !l ? null : /^Beginner/.test(l) ? 'Beginner' : l === 'Advanced' ? 'Advanced' : 'Intermediate';
+const ageGroup = n => n === null ? null : n < 13 ? 'Children' : n < 18 ? 'Teens' : 'University / adults';
+function matchError(err){
+  const m = (err && err.message) || '';
+  if (m.includes('matches_one_active_per_student')) return 'That student already has an active volunteer.';
+  if (m.includes('relation') && m.includes('matches')) return 'The matches table does not exist yet. Run QUERY 6 in Supabase first.';
+  return m || 'Something went wrong.';
+}
+
+async function loadMatches(){
+  const [a, s, m] = await Promise.all([
+    supabaseClient.from('applications').select('*'),
+    supabaseClient.from('student_applications').select('*'),
+    supabaseClient.from('matches').select('*').order('created_at', { ascending: false }),
+  ]);
+  const err = a.error || s.error || m.error;
+  if (err){
+    root.innerHTML = modeToggle() + `<div class="panel"><h3>Could not load matches</h3><p></p></div>`;
+    root.querySelector('.panel p').textContent = matchError(err);
+    wireMode(); return;
+  }
+  apps = a.data || []; students = s.data || []; matches = m.data || [];
+  renderMatches();
+}
+
+function renderMatches(){
+  const active = matches.filter(m => m.status === 'active');
+  const matchedStudents = new Set(active.map(m => m.student_id));
+  const freeStudents = students.filter(x => x.status === 'approved' && !matchedStudents.has(x.id));
+  const vols = apps.filter(x => x.status === 'approved');
+  const countFor = id => active.filter(m => m.volunteer_id === id).length;
+  const find = (arr, id) => arr.find(x => x.id === id);
+  const stu = x => esc(pname(x)) + ' · ' + esc(x.assigned_level || x.suggested_level || 'level not set') + ' · age ' + (ageOf(x.date_of_birth) ?? '?');
+  const vol = x => esc(pname(x)) + ' · ' + esc(x.country || '') + ' · ' + countFor(x.id) + '/' + (x.max_students || '?') + ' students';
+
+  root.innerHTML = modeToggle() + `<h1>Matches</h1>
+    <p style="color:var(--ink-soft);margin:0 0 16px;">Pair an approved student with an approved volunteer. Each will then see the other's first name on their dashboard, and the volunteer adds the VooV meeting link. People are not emailed automatically — tell them they've been matched.</p>
+    <div class="panel"><h3>Create a match</h3>
+      ${(!freeStudents.length || !vols.length) ? `<p style="color:var(--ink-soft);margin:0;">${!vols.length ? 'There are no approved volunteers yet.' : ''} ${!freeStudents.length ? 'There are no approved students waiting for a volunteer.' : ''} Approve people in the Volunteers / Students tabs first.</p>` : `
+      <div class="two">
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Student (approved, no volunteer yet)</span>
+          <select id="mStudent"><option value="">— choose —</option>${freeStudents.map(x => `<option value="${esc(x.id)}">${stu(x)}</option>`).join('')}</select></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Volunteer (approved)</span>
+          <select id="mVol"><option value="">— choose —</option>${vols.map(x => `<option value="${esc(x.id)}">${vol(x)}</option>`).join('')}</select></div>
+      </div>
+      <div id="mCompat"></div>
+      <div class="two" style="margin-top:6px;">
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Planned lesson time (optional, shown to both)</span><input type="text" id="mSched" placeholder="e.g. Thursdays 7:00 PM Beijing time"></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Private note (only you can see this)</span><input type="text" id="mNotes"></div>
+      </div>
+      <div style="margin-top:14px;"><button class="btn green" id="mCreate" disabled>Create match</button></div>`}
+    </div>
+    <div class="panel"><h3>All matches (${matches.length})</h3>
+      <table><thead><tr><th>STUDENT</th><th>VOLUNTEER</th><th>STATUS</th><th>LESSON TIME</th><th>VOOV LINK</th></tr></thead><tbody>
+      ${matches.length ? matches.map(m => { const s2 = find(students, m.student_id), v2 = find(apps, m.volunteer_id);
+        return `<tr class="row" data-mid="${esc(m.id)}"><td>${esc(s2 ? pname(s2) : '?')}</td><td>${esc(v2 ? pname(v2) : '?')}</td><td><span class="pill ${m.status === 'active' ? 'ok' : m.status === 'paused' ? 'warn' : ''}">${esc(m.status)}</span></td><td>${esc(m.schedule_text) || '—'}</td><td>${m.meeting_link ? '✓ added' : 'not added yet'}</td></tr>`; }).join('')
+        : '<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:26px;">No matches yet.</td></tr>'}
+      </tbody></table></div>`;
+  wireMode();
+  root.querySelectorAll('tr.row[data-mid]').forEach(r => r.onclick = () => openMatch(r.dataset.mid));
+
+  const selS = document.getElementById('mStudent'), selV = document.getElementById('mVol');
+  if (!selS) return;
+  const compat = () => {
+    const sObj = find(students, selS.value), vObj = find(apps, selV.value);
+    const box = document.getElementById('mCompat'), btn = document.getElementById('mCreate');
+    if (!sObj || !vObj){ box.innerHTML = ''; btn.disabled = true; return; }
+    const sa = ageOf(sObj.date_of_birth), va = ageOf(vObj.date_of_birth);
+    const block = [], warn = [];
+    if (va !== null && va < 18 && (sa === null || sa >= 18)) block.push('This volunteer is under 18, so they can only be matched with a student who is under 18.');
+    const n = countFor(vObj.id);
+    if (vObj.max_students && n >= vObj.max_students) warn.push(pname(vObj) + ' already has ' + n + ' of the ' + vObj.max_students + ' students they said they can teach.');
+    const lg = levelGroup(sObj.assigned_level || sObj.suggested_level), lp = vObj.preferred_student_levels || '';
+    if (lg && lp && !/No preference/i.test(lp) && !lp.includes(lg)) warn.push('Student level looks like ' + lg + '; the volunteer prefers: ' + lp + '.');
+    const ag = ageGroup(sa), ap = vObj.preferred_age_groups || '';
+    if (ag && ap && !/No preference/i.test(ap) && !ap.includes(ag)) warn.push('Student is in the "' + ag + '" age group; the volunteer prefers: ' + ap + '.');
+    const sd = (sObj.preferred_days || '').split(',').map(x => x.trim()).filter(Boolean), vd = (vObj.avail_days || '').split(',').map(x => x.trim()).filter(Boolean);
+    if (sd.length && vd.length && !sd.some(d => vd.includes(d))) warn.push('They have no weekdays in common.');
+    if (sa !== null && sa < 18 && !sObj.consent_guardian) warn.push('Student is under 18 and the guardian-consent box was not ticked.');
+    box.innerHTML = `<div class="sidebyside">
+        <div><b>${esc(pname(sObj))} (student)</b>Level: ${esc(sObj.assigned_level || sObj.suggested_level) || '—'}<br>Age: ${sa ?? '—'}<br>Wants: ${esc(sObj.learning_goals) || '—'}<br>Free days: ${esc(sObj.preferred_days) || '—'}<br>Times (Beijing): ${esc(sObj.preferred_start_time)}–${esc(sObj.preferred_end_time)}</div>
+        <div><b>${esc(pname(vObj))} (volunteer)</b>${esc(vObj.country) || '—'} · time zone ${esc(vObj.timezone) || '—'}<br>Available: ${esc(vObj.avail_days) || '—'}<br>Hours (their time zone): ${esc(vObj.avail_start_time)}–${esc(vObj.avail_end_time)}<br>Prefers ages: ${esc(vObj.preferred_age_groups) || '—'}<br>Prefers levels: ${esc(vObj.preferred_student_levels) || '—'}</div></div>`
+      + block.map(t => `<div class="block">⛔ ${esc(t)}</div>`).join('') + warn.map(t => `<div class="flag">⚠ ${esc(t)}</div>`).join('');
+    btn.disabled = block.length > 0;
+    btn.dataset.warn = warn.join(' | ');
+  };
+  selS.onchange = compat; selV.onchange = compat;
+  document.getElementById('mCreate').onclick = async (ev) => {
+    const btn = ev.target;
+    if (btn.dataset.warn && !confirm('There are warnings:\n\n' + btn.dataset.warn.split(' | ').join('\n') + '\n\nCreate the match anyway?')) return;
+    const row = { volunteer_id: selV.value, student_id: selS.value,
+      schedule_text: document.getElementById('mSched').value.trim() || null, admin_notes: document.getElementById('mNotes').value.trim() || null };
+    btn.disabled = true;
+    const { error } = await supabaseClient.from('matches').insert(row);
+    if (error){ alert('Could not create the match: ' + matchError(error)); btn.disabled = false; return; }
+    await loadMatches();
+  };
+}
+
+function openMatch(id){
+  const m = matches.find(x => x.id === id); if (!m) return;
+  const s2 = students.find(x => x.id === m.student_id), v2 = apps.find(x => x.id === m.volunteer_id);
+  root.innerHTML = modeToggle() + `<button class="btn ghost" id="mBack">← All matches</button>
+    <h1>${esc(s2 ? pname(s2) : '?')} <span style="font-size:1rem;color:var(--ink-soft);font-weight:400;">with</span> ${esc(v2 ? pname(v2) : '?')}</h1>
+    <div class="panel"><h3>Match details</h3>
+      <div class="two">
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Status</span>
+          <select id="eStatus">${['active','paused','ended'].map(x => `<option ${m.status === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Lesson time shown to both</span><input type="text" id="eSched" value="${esc(m.schedule_text)}"></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">VooV meeting link</span><input type="text" id="eLink" value="${esc(m.meeting_link)}" placeholder="https://voovmeeting.com/..."></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Meeting ID</span><input type="text" id="eId" value="${esc(m.meeting_id)}"></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Meeting password</span><input type="text" id="ePw" value="${esc(m.meeting_password)}"></div>
+        <div><span style="display:block;margin-bottom:4px;font-size:.85rem;">Private note (only you)</span><input type="text" id="eNotes" value="${esc(m.admin_notes)}"></div>
+      </div>
+      <p style="font-size:.8rem;color:var(--ink-soft);">Only VooV Meeting / Tencent Meeting links are accepted (voovmeeting.com, meeting.tencent.com, wemeet.qq.com). The volunteer can also fill these in themselves from their dashboard. "Paused" or "ended" hides the match from both people.</p>
+      <button class="btn" id="eSave">Save</button>
+      <button class="btn red" id="eDelete">Delete match</button>
+    </div>`;
+  wireMode();
+  document.getElementById('mBack').onclick = () => renderMatches();
+  document.getElementById('eSave').onclick = async () => {
+    const link = document.getElementById('eLink').value.trim();
+    if (link && !MEET_RE.test(link)){ alert('The meeting link must be a VooV Meeting or Tencent Meeting link (it starts with https://voovmeeting.com/).'); return; }
+    const fields = { status: document.getElementById('eStatus').value, schedule_text: document.getElementById('eSched').value.trim() || null,
+      meeting_link: link || null, meeting_id: document.getElementById('eId').value.trim() || null,
+      meeting_password: document.getElementById('ePw').value.trim() || null, admin_notes: document.getElementById('eNotes').value.trim() || null };
+    const { data, error } = await supabaseClient.from('matches').update(fields).eq('id', id).select('id');
+    if (error || !data || !data.length){ alert('Could not save: ' + (error ? matchError(error) : 'match not found')); return; }
+    Object.assign(m, fields); renderMatches();
+  };
+  document.getElementById('eDelete').onclick = async () => {
+    if (!confirm('Delete this match completely? (Use "ended" instead if you want to keep a record.)')) return;
+    const { error } = await supabaseClient.from('matches').delete().eq('id', id);
+    if (error){ alert('Could not delete: ' + matchError(error)); return; }
+    matches = matches.filter(x => x.id !== id); renderMatches();
   };
 }
 

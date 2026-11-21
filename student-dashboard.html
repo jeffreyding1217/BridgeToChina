@@ -63,6 +63,10 @@
     .bottom-grid{ grid-template-columns:1fr; }
     .topbar{ flex-direction:column; align-items:flex-start; gap:10px; }
   }
+  .vcard{ padding:24px; }
+  .vcard h3{ font-family:var(--font-display); margin:0 0 4px; color:var(--blue-deep); font-size:1.2rem; }
+  .vmeta{ font-size:.9rem; color:var(--ink-soft); line-height:1.75; }
+  .joinbtn{ display:inline-block; margin-top:14px; background:var(--green); color:#fff; font-weight:700; padding:12px 24px; border-radius:999px; }
 </style>
 </head>
 <body>
@@ -94,10 +98,8 @@
     <a class="a-btn" href="https://voovmeeting.com/download" target="_blank" rel="noopener">Download VooV Meeting · 下载</a>
   </div>
 
-  <h2 class="section-title">Your Lessons · 你的课程</h2>
-  <div class="card" style="margin-bottom:34px;padding:26px 24px;color:var(--ink-soft);font-size:.92rem;line-height:1.7;" id="lessonsBox">
-    No lessons are scheduled yet. After you are approved and matched, your lessons will appear here.<br>目前还没有安排课程。审核通过并匹配志愿者后，课程会显示在这里。
-  </div>
+  <h2 class="section-title">Your Volunteer · 你的志愿者</h2>
+  <div id="lessonsBox" style="margin-bottom:34px;"><div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;">Loading… 加载中…</div></div>
 </div>
 
 <script src="auth-config.js"></script>
@@ -129,6 +131,7 @@
     document.getElementById('statLevel').style.fontSize = a.assigned_level ? '' : '.95rem';
     document.getElementById('statStatus').style.fontSize = '1.05rem';
 
+    await loadVolunteerMatch(a.status);
     const b = document.getElementById('statusBanner');
     if (a.status === 'approved') {
       b.innerHTML = '<div style="background:#e7f5ee;color:#146a48;border-radius:12px;padding:14px 18px;margin-bottom:22px;font-size:.9rem;font-weight:600;line-height:1.6;">✓ You are approved! We will email you when we find a volunteer for you. 你已通过审核！找到合适的志愿者后我们会邮件通知你。</div>';
@@ -140,6 +143,29 @@
       b.innerHTML = '<div style="background:#fff;border:1.5px solid #f2a73b;border-radius:12px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;"><div><div style="font-weight:700;">Finish your registration · 请完成注册</div><div style="font-size:.85rem;color:#4a5c6b;margin-top:2px;">You can only be matched with a volunteer after you finish and our team approves. 完成注册并通过审核后才能匹配志愿者。</div></div><a href="student-application.html" style="background:#1e4e8c;color:#fff;font-weight:700;font-size:.82rem;padding:10px 18px;border-radius:999px;white-space:nowrap;">Continue · 继续</a></div>';
     }
   }
+  const MEET_RE = /^https:\/\/([a-z0-9-]+\.)*(voovmeeting\.com|meeting\.tencent\.com|wemeet\.qq\.com)(\/\S*)?$/i;
+  function plain(html){ const d = document.getElementById('lessonsBox'); d.innerHTML = '<div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;line-height:1.7;"></div>'; d.firstChild.innerHTML = html; }
+  async function loadVolunteerMatch(status){
+    if (status !== 'approved') { plain('You will be matched with a volunteer after your registration is approved.<br>你的注册通过审核后，我们会为你匹配志愿者。'); return; }
+    const { data, error } = await supabaseClient.rpc('my_matches');
+    if (error) { plain('We could not load your volunteer right now. Please try again later.<br>暂时无法加载你的志愿者信息，请稍后再试。'); return; }
+    const list = data || [];
+    if (!list.length) { plain('You have not been matched with a volunteer yet. Our team will find one for you; check back here later.<br>目前还没有为你匹配志愿者。找到后会显示在这里，请稍后再来查看。'); return; }
+    document.getElementById('statVol').textContent = list[0].other_name;
+    document.getElementById('lessonsBox').innerHTML = list.map(m => {
+      const ok = m.meeting_link && MEET_RE.test(m.meeting_link);
+      return `<div class="card vcard"><h3>${esc(m.other_name)}</h3><div class="vmeta">
+        ${m.other_country ? 'From: ' + esc(m.other_country) + '<br>' : ''}
+        ${m.other_bio ? esc(m.other_bio) + '<br>' : ''}
+        ${m.schedule ? '<b>Lesson time · 上课时间:</b> ' + esc(m.schedule) + '<br>' : ''}
+        ${m.meeting_id ? 'Meeting ID · 会议号: <b>' + esc(m.meeting_id) + '</b><br>' : ''}
+        ${m.meeting_password ? 'Password · 密码: <b>' + esc(m.meeting_password) + '</b><br>' : ''}
+        </div>
+        ${ok ? '<a class="joinbtn" href="' + esc(m.meeting_link) + '" target="_blank" rel="noopener noreferrer">Join lesson on VooV · 加入课程</a>'
+             : '<div class="vmeta" style="margin-top:12px;">Your volunteer has not added the meeting link yet. 你的志愿者还没有添加会议链接。</div>'}</div>`;
+    }).join('');
+  }
+
   document.getElementById('logoutLink').addEventListener('click', async (e) => {
     e.preventDefault();
     if (isConfigured) await supabaseClient.auth.signOut();

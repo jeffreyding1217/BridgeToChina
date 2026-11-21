@@ -7,18 +7,18 @@ Unzip this folder on your computer. Upload EVERYTHING inside it to your GitHub r
 (replace the old files) and click "Commit changes". Wait 1–2 minutes.
 Your site: https://jeffreyding1217.github.io/BridgeToChina/
 
-## 2. Set up the database  (file: 1-database-setup.sql)
-Supabase → SQL Editor → New query → paste the whole file → Run.
+## 2. Set up the database  (QUERY 1 in SQL-EDITOR-QUERIES.md)
+Supabase → SQL Editor → New query → paste QUERY 1 → Run.
 Safe to repeat any time you get a new version.
 
-## 3. Turn on email alerts  (file: 2-email-alerts.sql)
-Paste it into a new query, replace the Resend-key placeholder near the bottom with your real
+## 3. Turn on email alerts  (QUERY 2 in SQL-EDITOR-QUERIES.md)
+Paste QUERY 2 into a new query, replace the Resend-key placeholder near the bottom with your real
 Resend key (starts with re_), then Run. A test email is sent to jeffreyding1217@gmail.com.
 Never save the key in a file or put it on GitHub.
 
-## 4. Make yourself an admin  (file: 3-make-me-admin.sql)
+## 4. Make yourself an admin  (QUERY 3 in SQL-EDITOR-QUERIES.md)
 First sign up on the website with jeffreyding1217@gmail.com and click the verification link.
-Then paste file 3 into a new query and Run. The result says in plain English whether it worked.
+Then paste QUERY 3 into a new query and Run. The result says in plain English whether it worked.
 
 ## 5. Supabase email settings (once)
 Authentication → URL Configuration:
@@ -52,3 +52,13 @@ Real: sign-up, email verification, application wizards for volunteers and studen
 assessments, orientation, availability, admin review, email alerts to you.
 Not yet built: matching students with volunteers, lesson scheduling, real hours tracking/certificates,
 profile photo upload, server-side grading.
+
+## Matching students and volunteers
+
+1. In the Supabase SQL Editor, run **QUERY 6** from `SQL-EDITOR-QUERIES.md` (creates the `matches` table and the `my_matches` / `update_my_match` functions).
+2. Upload the updated files to GitHub.
+3. Sign in as admin, open **Admin → Matches**, and pair an approved student with an approved volunteer.
+4. Tell both people they have been matched. There is no automatic email for this yet. They will see each other on their dashboards.
+5. The volunteer adds the VooV link, meeting ID, password and lesson time on their dashboard; the student then sees a Join button.
+
+Dashboards show only real data. With no matches they show an empty state.

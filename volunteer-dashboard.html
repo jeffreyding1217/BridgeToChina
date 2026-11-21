@@ -68,6 +68,15 @@
     .action-grid, .bottom-grid{ grid-template-columns:1fr; }
     .topbar{ flex-direction:column; align-items:flex-start; gap:10px; }
   }
+  .match-card{ padding:22px 24px; margin-bottom:16px; }
+  .match-card h3{ font-family:var(--font-display); margin:0 0 4px; color:var(--blue-deep); font-size:1.15rem; }
+  .match-meta{ font-size:.86rem; color:var(--ink-soft); line-height:1.7; }
+  .match-form{ display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }
+  .match-form label{ display:block; font-size:.78rem; font-weight:700; color:var(--ink-soft); margin-bottom:4px; }
+  .match-form input{ width:100%; padding:9px 12px; border:1.5px solid var(--line); border-radius:9px; font-family:inherit; font-size:.88rem; background:var(--bg-tint); }
+  .mf-msg{ font-size:.82rem; margin-top:8px; } .mf-msg.err{ color:#a3312a; } .mf-msg.ok{ color:var(--green-deep); }
+  .minor-note{ background:#fdf1e0; border-left:4px solid var(--amber); padding:10px 14px; border-radius:8px; font-size:.84rem; color:#7a5314; margin-top:12px; line-height:1.55; }
+  @media (max-width:760px){ .match-form{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -83,16 +92,9 @@
 <div class="wrap">
   <h1 class="hello" id="helloName">Welcome back 👋</h1>
   <p class="hello-sub">Here's what's happening with your tutoring this week.</p>
-  <div style="display:inline-block; background:#fdf1e0; color:#9a6b1a; font-family:var(--font-mono); font-size:0.72rem; font-weight:700; padding:6px 12px; border-radius:999px; margin-bottom:16px;">⚠ SAMPLE DATA — lessons/hours below aren't real yet, only your login + application are</div>
-
   <div id="statusBanner"></div>
 
-  <div class="stat-row">
-    <div class="stat-chip"><b>8.5</b><span>Hours this month</span></div>
-    <div class="stat-chip"><b>3</b><span>Students you teach</span></div>
-    <div class="stat-chip"><b>142</b><span>Total volunteer hours</span></div>
-    <div class="stat-chip"><b>Thu, 7:00 PM</b><span>Your next session</span></div>
-  </div>
+  <div class="stat-row" id="statRow"></div>
 
   <!-- The two things you asked about live here -->
   <div class="action-grid" id="actionGrid" style="position:relative;">
@@ -127,32 +129,14 @@
     </div>
   </div>
 
-  <h2 class="section-title">Upcoming Lessons</h2>
-  <div class="card" style="margin-bottom:34px;">
-    <div class="lesson-row">
-      <div><div class="lr-label">Conversation Practice — Yue L.</div><div class="lr-sub">Thursday, Jul 2 · 7:00 PM GMT+8 · Lesson 3: Subject-Verb Mechanics</div></div>
-      <a class="lr-join" href="login.html">Join Soon</a>
-    </div>
-    <div class="lesson-row">
-      <div><div class="lr-label">Conversation Practice — Bo T.</div><div class="lr-sub">Saturday, Jul 4 · 9:00 AM GMT+8 · Lesson 5: Determiners and Connectors</div></div>
-      <span class="lr-pending">UPCOMING</span>
-    </div>
-    <div class="lesson-row">
-      <div><div class="lr-label">First Session — Wei M.</div><div class="lr-sub">Monday, Jul 6 · 6:30 PM GMT+8 · Lesson 0: Welcome &amp; Level Check</div></div>
-      <span class="lr-pending">UPCOMING</span>
-    </div>
-  </div>
+  <h2 class="section-title">Your Students</h2>
+  <div id="matchesBox" style="margin-bottom:34px;"><div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;">Loading…</div></div>
 
   <div class="bottom-grid">
     <div class="card hours-card">
-      <div class="hours-top">
-        <div>
-          <div style="font-size:0.8rem; color:var(--ink-soft); font-weight:600;">TOTAL VOLUNTEER HOURS</div>
-          <b>142.0</b>
-        </div>
-        <a class="cert-btn" href="#">🎓 Download Certificate</a>
-      </div>
-      <div style="font-size:0.85rem; color:var(--ink-soft);">Hours are logged automatically after each completed session and approved by an administrator before your certificate updates.</div>
+      <div style="font-size:0.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:6px;">VOLUNTEER HOURS &amp; CERTIFICATES</div>
+      <div style="font-size:0.9rem; color:var(--ink); line-height:1.6;">Hour tracking and certificates are not available yet. Nothing is being counted for you at the moment.</div>
+      <div style="font-size:0.82rem; color:var(--ink-soft); margin-top:8px;">When this is switched on, completed sessions will be listed here and approved by an administrator.</div>
     </div>
     <div class="card prep-card">
       <div style="font-weight:700; margin-bottom:6px;">Need to prep offline?</div>
@@ -172,6 +156,8 @@
       document.getElementById('helloName').textContent = 'Welcome back, Sample 👋';
       document.getElementById('avatarInitial').textContent = 'S';
       renderStatusBanner('approved');
+      document.getElementById('statRow').innerHTML = '';
+      note('Not connected to the database yet.');
       return;
     }
 
@@ -201,7 +187,69 @@
     document.getElementById('avatarInitial').textContent = name.trim().charAt(0).toUpperCase() || 'V';
 
     const { data: app } = await supabaseClient.from('applications').select('status').eq('id', session.user.id).single();
-    renderStatusBanner(app ? app.status : 'account_created');
+    const st = app ? app.status : 'account_created';
+    renderStatusBanner(st);
+    await renderStats(st);
+  }
+
+  function esc(t){ return String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  const MEET_RE = /^https:\/\/([a-z0-9-]+\.)*(voovmeeting\.com|meeting\.tencent\.com|wemeet\.qq\.com)(\/\S*)?$/i;
+  const box = () => document.getElementById('matchesBox');
+  const note = (t) => { box().innerHTML = '<div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;line-height:1.7;"></div>'; box().firstChild.textContent = t; };
+
+  async function renderStats(status){
+    const row = document.getElementById('statRow');
+    const chip = (v, l) => `<div class="stat-chip"><b>${esc(v)}</b><span>${esc(l)}</span></div>`;
+    if (status !== 'approved') {
+      row.innerHTML = chip(STATUS_LABELS[status] || status, 'Your application status');
+      note('Students appear here once your application is approved and our team matches you with someone.');
+      return;
+    }
+    if (!isConfigured) { row.innerHTML = ''; note('Not connected to the database yet.'); return; }
+    const { data, error } = await supabaseClient.rpc('my_matches');
+    if (error) {
+      row.innerHTML = chip('Approved', 'Your application status');
+      note(/my_matches|function/i.test(error.message || '') ? 'Matching is not set up yet. The site owner needs to run QUERY 6 in Supabase.' : 'Could not load your students: ' + error.message);
+      return;
+    }
+    const list = data || [];
+    row.innerHTML = chip('Approved', 'Your application status') + chip(String(list.length), list.length === 1 ? 'Student you teach' : 'Students you teach');
+    if (!list.length) { note('You have not been matched with a student yet. Our team will match you, and the student will appear here. Nobody has been assigned to you so far.'); return; }
+    box().innerHTML = list.map((m, i) => matchCard(m, i)).join('');
+    list.forEach((m, i) => wireMatch(m, i));
+  }
+
+  function matchCard(m, i){
+    const times = (m.other_start && m.other_end) ? m.other_start + '–' + m.other_end + ' Beijing time' : '—';
+    return `<div class="card match-card">
+      <h3>${esc(m.other_name)}</h3>
+      <div class="match-meta">
+        Level: <b>${esc(m.other_level) || 'not set yet'}</b><br>
+        Wants to work on: ${esc(m.other_goals) || '—'}<br>
+        Free days: ${esc(m.other_days) || '—'} · ${esc(times)}
+        ${m.other_notes ? '<br>Note from the student: ' + esc(m.other_notes) : ''}
+      </div>
+      ${m.other_is_minor ? '<div class="minor-note"><b>This student is under 18.</b> Keep everything on the program\'s channels, follow the safety rules from your orientation, and never share personal contact details.</div>' : ''}
+      <div class="match-form">
+        <div><label>Lesson time (shown to your student)</label><input type="text" id="mf_sched${i}" value="${esc(m.schedule)}" placeholder="e.g. Thursdays 7:00 PM Beijing time" maxlength="200"></div>
+        <div><label>VooV Meeting link</label><input type="text" id="mf_link${i}" value="${esc(m.meeting_link)}" placeholder="https://voovmeeting.com/..." maxlength="300"></div>
+        <div><label>Meeting ID (optional)</label><input type="text" id="mf_id${i}" value="${esc(m.meeting_id)}" maxlength="40"></div>
+        <div><label>Meeting password (optional)</label><input type="text" id="mf_pw${i}" value="${esc(m.meeting_password)}" maxlength="40"></div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn btn-primary" id="mf_save${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save meeting details</button></div>
+      <div class="mf-msg" id="mf_msg${i}"></div>
+    </div>`;
+  }
+
+  function wireMatch(m, i){
+    document.getElementById('mf_save' + i).onclick = async () => {
+      const g = id => document.getElementById(id + i).value.trim();
+      const msg = document.getElementById('mf_msg' + i);
+      if (g('mf_link') && !MEET_RE.test(g('mf_link'))) { msg.className = 'mf-msg err'; msg.textContent = 'The link must be a VooV Meeting or Tencent Meeting link (it starts with https://voovmeeting.com/).'; return; }
+      const { error } = await supabaseClient.rpc('update_my_match', { p_match_id: m.match_id, p_link: g('mf_link'), p_meeting_id: g('mf_id'), p_password: g('mf_pw'), p_schedule: g('mf_sched') });
+      msg.className = 'mf-msg ' + (error ? 'err' : 'ok');
+      msg.textContent = error ? error.message : 'Saved. Your student can now see these details.';
+    };
   }
 
   const STATUS_LABELS = {

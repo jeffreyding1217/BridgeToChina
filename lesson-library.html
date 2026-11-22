@@ -48,7 +48,7 @@
     overflow:hidden; box-shadow: 0 16px 40px rgba(19,36,54,0.18); border:1px solid var(--line);
   }
   .stage:fullscreen{ border-radius:0; aspect-ratio:unset; }
-  .slide{ position:absolute; inset:0; padding: 4.2% 4.6%; display:flex; flex-direction:column; font-size: clamp(9px, 1.05vw, 16px); }
+  .slide{ position:absolute; inset:0; padding: 4.2% 4.6%; display:flex; flex-direction:column; font-size: clamp(9px, 1.15vw, 20px); }
   .slide.dark{ background:var(--blue-deep); color:#fff; }
   .slide.tint{ background:var(--tint); }
   .slide.light{ background:#fff; }
@@ -166,54 +166,144 @@
 <script>
 /* ---------------- Content data ---------------- */
 const topics = [
-  { title: "Pronunciation Basics", level: "Beginner", focus: [
-    ['The "TH" Sounds', "Mastering the /ð/ (this) and /θ/ (think) sounds."],
-    ["Ending Consonants", "Pronouncing final consonants (/t/, /d/, /p/, /k/) clearly, without dropping them or adding a vowel sound."],
-    ["L vs. R Distinction", "Training the tongue to clearly separate /l/ and /r/ sounds."] ] },
-  { title: "Functional Survival Phrases", level: "Beginner", focus: [
-    ["Daily Requests", 'Asking for help, directions, prices, or clarification (e.g., "Could you repeat that?").'],
-    ["Self-Introduction", "Stating name, hometown, occupation, and basic hobbies."],
-    ["Polite Markers", "Moving past a direct translation style by using please, thank you, and excuse me."] ] },
-  { title: "Subject-Verb Mechanics", level: "Beginner", focus: [
-    ["Gendered Pronouns", "Breaking the habit of mixing up he and she in spoken conversation."],
-    ["Singular vs. Plural", 'Remembering to add plural "-s" or "-es" suffixes to nouns.'],
-    ["Basic Word Order", "Mastering Subject + Verb + Object structures without dropping verbs."] ] },
-  { title: "Basic Timeline Shifts", level: "Beginner-High", focus: [
-    ["Past vs. Present", 'Moving from time markers (like "yesterday") to changing the verb form (go to went).'],
-    ["Future Tense", "Using will and going to for upcoming actions."],
-    ["Continuous Actions", 'Using the "-ing" form for things happening right now.'] ] },
-  { title: "Determiners and Connectors", level: "Beginner-High", focus: [
-    ["Articles", "Learning when to use a, an, and the (concepts that don't exist in Chinese grammar)."],
-    ["Prepositions of Place/Time", "Correctly applying in, on, and at for locations and dates."],
-    ["Simple Conjunctions", "Linking ideas logically using and, but, because, and so."] ] },
-  { title: "Sentence Rhythm and Intonation", level: "Intermediate-Low", focus: [
-    ["Word Stress", "Identifying which syllable in a multi-syllable word carries the primary accent."],
-    ["Sentence Stress", "Emphasizing content words while shrinking function words for natural rhythm."],
-    ["Linking Sounds", 'Smoothly connecting words (e.g., "an apple" becomes anapple).'] ] },
-  { title: "Conversational Expansion", level: "Intermediate-Low", focus: [
-    ["Idiomatic Fillers", "Using conversational anchors like well, actually, and you know to buy time to think."],
-    ["Follow-up Questions", "Keeping a conversation flowing by asking open-ended questions."],
-    ["Expressing Opinions", "Using soft openers like I think..., In my opinion..., or I feel like...."] ] },
-  { title: "Compound Grammar & Conditions", level: "Intermediate", focus: [
-    ["Perfect Tenses", "Mastering the Present Perfect (I have done) for life experiences or ongoing situations."],
-    ["Relative Clauses", "Using who, which, and that to combine two sentences into one."],
-    ["Basic Conditionals", "Expressing hypothetical situations using If... I would... structures."] ] },
-  { title: "Contextual Vocabulary & Phrasal Verbs", level: "Intermediate", focus: [
-    ["Phrasal Verbs", "Moving from formal verbs to common multi-word verbs (pick up instead of collect)."],
-    ["Collocations", "Learning which words naturally pair together (make a mistake, not do a mistake)."],
-    ["Synonym Variety", "Expanding past good, bad, happy to precise words like excellent, terrible, thrilled."] ] },
-  { title: "Thinking in English", level: "Intermediate-High", focus: [
-    ["Direct Association", "Eliminating the internal Chinese-to-English translation loop."],
-    ["Paraphrasing", "Explaining a missing vocabulary word using alternative English phrasing."],
-    ["Cultural Nuance", "Understanding when a phrase fits casual, polite, or formal settings."] ] },
+{ title: "Introductions & the Verb “To Be”", level: "Beginner",
+  summary: "am / is / are — introducing yourself and other people.",
+  warm: ["What is your name, and how old are you?", "Where are you from?", "How are you today?", "Who is in your family?"],
+  vocab: [["favorite","最喜欢的","My favorite color is blue."],["hobby","爱好","My hobby is drawing."],["city","城市","I am from a big city."],["hometown","家乡","My hometown is small and quiet."],["classmate","同学","She is my classmate."],["busy","忙的","I am busy today."],["happy","开心的","We are happy."],["family","家人","My family is big."]],
+  rule: { intro: "“To be” has three forms in the present. Every English sentence needs a verb — don’t leave it out.",
+    forms: [["I → am","I am a student."],["he / she / it → is","She is my teacher."],["you / we / they → are","They are friends."],["Negative: am not / isn’t / aren’t","He isn’t tall."],["Question: swap the order","Are you ready? — Yes, I am."]],
+    mistakes: [["I student.","I am a student."],["She are my friend.","She is my friend."],["He no is tall.","He is not tall."],["Where you from?","Where are you from?"]],
+    tip: "In speech, use short forms: I’m, she’s, they’re, isn’t, aren’t." },
+  practice: [["I ___ twelve years old.","am"],["She ___ my teacher.","is"],["They ___ from China.","are"],["___ you ready?","Are"],["He ___ not at home.","is"],["We ___ good friends.","are"],["It ___ a sunny day.","is"],["Make a question: he / is / tall","Is he tall?"]],
+  speak: { scenario: "Meeting a new friend", setup: "The teacher is a new classmate. The student introduces themself and finds out about the new classmate.", phrases: ["Nice to meet you.","I’m from ___.","Where are you from?","How old are you?","What is your hobby?","My favorite ___ is ___."], prompts: ["Introduce yourself in 4 sentences.","Ask the teacher 4 questions.","Introduce one family member: “My mother is… She is…”"] },
+  game: { name: "Who Am I?", how: ["The teacher secretly thinks of a famous person, character or animal.","The student asks yes/no questions with “to be”.","The student has 10 questions to guess. Then switch roles."], prompts: ["Is it an animal?","Is she a singer?","Is he tall?","Are they from China?","Is it big?","Is he alive?"] },
+  homework: "Write 5 sentences about yourself and your family using am / is / are." },
+
+{ title: "Present Simple: Daily Routines", level: "Beginner-High",
+  summary: "Habits and facts. do / does questions and negatives.",
+  warm: ["What time do you wake up?", "What do you usually eat for breakfast?", "How do you get to school or work?", "What do you do on weekends?"],
+  vocab: [["wake up","起床","I wake up at 7:00."],["usually","通常","I usually walk to school."],["always","总是","She always drinks tea."],["sometimes","有时","We sometimes eat out."],["never","从不","He never eats breakfast."],["breakfast","早餐","I have eggs for breakfast."],["homework","作业","I do my homework after dinner."],["weekend","周末","On the weekend I play football."]],
+  rule: { intro: "Use the present simple for habits, routines and facts.",
+    forms: [["I / you / we / they + verb","I play football."],["he / she / it + verb + s / es","She plays. He watches TV. It studies → studies"],["Negative: don’t / doesn’t + base verb","He doesn’t like fish."],["Question: Do / Does + subject + base verb","Does she play tennis?"],["Frequency word goes before the verb","I always eat breakfast."]],
+    mistakes: [["She play tennis.","She plays tennis."],["He doesn’t likes fish.","He doesn’t like fish."],["Does she goes to school?","Does she go to school?"],["I am go to school by bus.","I go to school by bus."]],
+    tip: "After does / doesn’t the verb goes back to the base form — the -s moves to “does”." },
+  practice: [["She ___ (play) the piano every day.","plays"],["We ___ (not / eat) meat.","don’t eat"],["He ___ (watch) TV at night.","watches"],["___ you ___ (like) music?","Do … like"],["My brother ___ (study) English on Monday.","studies"],["She ___ (not / live) here.","doesn’t live"],["___ he ___ (have) a pet?","Does … have"],["Put in order: always / I / breakfast / eat","I always eat breakfast."]],
+  speak: { scenario: "A day in my life", setup: "The student interviews the teacher about a normal day. Then switch.", phrases: ["What time do you ___?","First, I ___.","Then I ___.","After that, I ___.","Finally, I ___.","I usually / sometimes / never ___."], prompts: ["Tell me about your morning, step by step.","Ask the teacher 5 questions about their day.","What is different on weekends?"] },
+  game: { name: "Truth or Lie: Routines", how: ["Each player says 3 sentences about their routine. One is a lie.","The other player asks “Do you…?” questions to find the lie.","One point for each lie found. Play 3 rounds."], prompts: ["Do you wake up at 5 a.m.?","Does your family eat dinner together?","Do you play sports every day?","Does your school start at 8?"] },
+  homework: "Write 6 sentences about your normal day. Use two frequency words (always, usually, sometimes, never)." },
+
+{ title: "Present Continuous: Right Now", level: "Beginner-High",
+  summary: "am / is / are + -ing. Now vs. every day.",
+  warm: ["What are you doing right now?", "What is the weather like where you are?", "Who is in your home with you at the moment?", "What are you wearing today?"],
+  vocab: [["cook","做饭","My mother is cooking dinner."],["wear","穿","He is wearing a red jacket."],["wait","等","We are waiting for the bus."],["listen","听","I am listening to music."],["draw","画","She is drawing a cat."],["run","跑","They are running in the park."],["carry","拿；搬","He is carrying a heavy bag."],["laugh","笑","The children are laughing."]],
+  rule: { intro: "Use am / is / are + verb-ing for actions happening now or around now.",
+    forms: [["Form: am / is / are + verb-ing","I am reading. She is cooking."],["Spelling: play → playing, make → making (drop e), run → running (double)",""],["Negative: am not / isn’t / aren’t + -ing","They aren’t watching TV."],["Question: Am / Is / Are + subject + -ing","Are you listening?"],["Habit vs. now","I drink tea every day. / I am drinking tea now."]],
+    mistakes: [["I am play games now.","I am playing games now."],["She is run.","She is running."],["I am wanting a drink.","I want a drink."],["He studying now.","He is studying now."]],
+    tip: "Verbs like want, like, know, love are not normally used with -ing." },
+  practice: [["I ___ (read) a book now.","am reading"],["She ___ (cook) dinner.","is cooking"],["They ___ (not / watch) TV.","aren’t watching"],["___ you ___ (listen)?","Are … listening"],["He ___ (run) in the park.","is running"],["We ___ (make) a cake.","are making"],["Choose: “I (go / am going) to school every day.”","go"],["Choose: “Look! It (rains / is raining).”","is raining"]],
+  speak: { scenario: "Describe the scene", setup: "The teacher describes a busy place (a market, a park, a classroom) or shows a photo on screen. The student says what each person is doing.", phrases: ["In the picture, I can see ___.","A man is ___-ing.","The children are ___-ing.","Maybe she is ___-ing.","What is he doing?"], prompts: ["Describe 5 different people or things.","Phone call: “Hi! What are you doing?” — act it out.","Describe what is happening outside your window."] },
+  game: { name: "Charades", how: ["One player acts out an action on camera without talking.","The other guesses: “You are ___-ing!”","Take turns. First to 5 correct guesses wins."], prompts: ["swimming","brushing teeth","riding a bike","cooking noodles","sleeping","playing the guitar","taking a photo","washing a car"] },
+  homework: "Look around you. Write 5 sentences about what people or things are doing right now." },
+
+{ title: "Past Simple: Yesterday & Last Week", level: "Beginner-High",
+  summary: "Regular and irregular verbs. did / didn’t.",
+  warm: ["What did you do yesterday?", "What did you eat for dinner last night?", "Where did you go last weekend?", "Who did you talk to today?"],
+  vocab: [["go → went","去","I went to the park."],["eat → ate","吃","She ate noodles."],["see → saw","看见","We saw a movie."],["buy → bought","买","He bought a new phone."],["have → had","有；吃","They had a party."],["take → took","拿；乘","I took a photo."],["meet → met","遇见","I met my friend."],["write → wrote","写","She wrote a letter."]],
+  rule: { intro: "Use the past simple for finished actions at a time in the past.",
+    forms: [["Regular: verb + ed","walk → walked, live → lived, study → studied, stop → stopped"],["Irregular: learn them!","go → went, eat → ate, see → saw"],["Negative: didn’t + base verb","I didn’t go."],["Question: Did + subject + base verb","Did you see him?"],["Time words","yesterday, last week, two days ago, in 2020"],["To be: was / were","I was tired. They were late."]],
+    mistakes: [["I go to the park yesterday.","I went to the park yesterday."],["She didn’t went.","She didn’t go."],["Did you saw it?","Did you see it?"],["I eated rice.","I ate rice."]],
+    tip: "After did / didn’t the verb is in the base form. Only one word shows the past!" },
+  practice: [["Yesterday I ___ (go) to the market.","went"],["She ___ (watch) a movie last night.","watched"],["We ___ (not / eat) lunch.","didn’t eat"],["___ you ___ (see) him?","Did … see"],["He ___ (buy) a new phone.","bought"],["They ___ (study) for the test.","studied"],["I ___ (be) tired yesterday.","was"],["Where ___ you ___ (go) last weekend?","did … go"]],
+  speak: { scenario: "Tell me about your weekend", setup: "The student tells a story about last weekend or a holiday. The teacher asks follow-up questions.", phrases: ["First, I ___.","Then we ___.","After that, ___.","Finally, ___.","It was ___.","Did you enjoy it? / Who did you go with?"], prompts: ["Tell the story in at least 6 sentences.","Teacher asks: What did you do next? How did you feel?","Switch: the teacher tells, the student asks."] },
+  game: { name: "Chain Story", how: ["The teacher starts: “Yesterday, I woke up and…”","The student adds one sentence in the past simple, then the teacher, and so on.","Keep going for 8 sentences. Use “and then”, “suddenly”, “after that”."], prompts: ["Yesterday, I woke up and…","Suddenly, I saw…","Then I decided to…","In the end, we…"] },
+  homework: "Write a paragraph (5–6 sentences) about your last holiday or weekend using the past simple." },
+
+{ title: "Talking About the Future: will & going to", level: "Intermediate-Low",
+  summary: "Plans, decisions, promises and predictions.",
+  warm: ["What are you going to do this weekend?", "What do you want to be in the future?", "What do you think the weather will be like tomorrow?", "Where do you want to travel one day?"],
+  vocab: [["plan","计划","I have a plan for Sunday."],["soon","很快","The class will start soon."],["probably","大概","It will probably rain."],["trip","旅行","We are going on a trip."],["future","未来","In the future I want to be a doctor."],["promise","承诺","I promise I will call you."],["maybe","也许","Maybe we will go to the beach."],["next week","下周","I am busy next week."]],
+  rule: { intro: "English has two common ways to talk about the future.",
+    forms: [["going to = plans and things you can see coming","I’m going to visit my grandma on Sunday. Look at those clouds — it’s going to rain."],["will = quick decisions, promises, offers, opinions","I’ll help you. I think it will be sunny."],["Form: am/is/are going to + base verb","She is going to study tonight."],["Form: will + base verb (won’t = will not)","He won’t come. I’ll call you."],["Questions","Will you help me? Are you going to study?"]],
+    mistakes: [["I will to go.","I will go."],["She will goes.","She will go."],["I going to study tomorrow.","I am going to study tomorrow."],["He will not to come.","He won’t come."]],
+    tip: "After will and to-go the verb is always the base form — no -s, no -ing." },
+  practice: [["I ___ (visit) my grandparents next week. (plan)","am going to visit"],["“It’s cold.” “I ___ (close) the window.” (decision)","will close / ’ll close"],["Look at the sky! It ___ (rain).","is going to rain"],["I think he ___ (win).","will win"],["She ___ (not / come) tomorrow.","won’t come"],["___ you ___ (study) tonight? (plan)","Are … going to study"],["I promise I ___ (call) you.","will call"],["Make a question: will / you / help / me","Will you help me?"]],
+  speak: { scenario: "Plan a dream trip", setup: "The student plans a dream trip with the teacher: where, when, with whom, what they are going to do.", phrases: ["I’m going to ___.","We’ll probably ___.","I think it will be ___.","Maybe we’ll ___.","What are you going to do there?"], prompts: ["Explain your trip in 6 sentences.","The teacher asks 3 questions about the plan.","Make 2 predictions about the trip with “I think … will …”."] },
+  game: { name: "Fortune Teller", how: ["The student is a fortune teller and predicts the teacher’s future: “You will…”","Each player makes 5 predictions. They can be funny!","Then talk about real plans: “I’m going to…”."], prompts: ["You will be famous.","You will travel to ___.","You will meet ___.","You will learn ___.","You won’t ___."] },
+  homework: "Write 5 sentences about your plans for next month (going to) and 3 predictions (will)." },
+
+{ title: "Nouns & Articles: a / an / the", level: "Intermediate-Low",
+  summary: "Plurals, countable / uncountable nouns, some / any.",
+  warm: ["What do you have in your bag?", "What is in your refrigerator?", "What animals do you like?", "What is your favorite place in your city?"],
+  vocab: [["egg","鸡蛋","I eat an egg for breakfast."],["sandwich","三明治","She ate two sandwiches."],["vegetable","蔬菜","Eat more vegetables."],["rice","米饭","We eat rice every day."],["bread","面包","I bought some bread."],["water","水","Do you want some water?"],["information","信息","I need some information."],["homework","作业","I have a lot of homework."]],
+  rule: { intro: "Articles are small words that don’t exist in Chinese — and they matter a lot in English.",
+    forms: [["a / an = one of many, or mentioned for the first time","I have a dog. a book, an apple, an hour, a university"],["the = a specific or already known thing","The dog is cute. The sun is hot."],["No article = general plurals and uncountable nouns","I like music. Dogs are friendly."],["Plurals","book → books, box → boxes, city → cities, child → children, man → men"],["Uncountable (no plural, no “a”): water, rice, bread, advice, information, homework","I have some milk. I don’t have any milk. Do you have any milk?"]],
+    mistakes: [["I have two book.","I have two books."],["She gave me an advice.","She gave me some advice."],["I am student.","I am a student."],["He is an university student.","He is a university student."]],
+    tip: "an goes before a vowel SOUND (an hour, a university). some → positive, any → negative and questions." },
+  practice: [["I have ___ apple.","an"],["She is ___ teacher.","a"],["I saw a cat. ___ cat was black.","The"],["___ sun is very hot.","The"],["Plural of “box”","boxes"],["Plural of “child”","children"],["I need ___ information. (some / any)","some"],["We don’t have ___ rice. (some / any)","any"]],
+  speak: { scenario: "At the supermarket", setup: "The teacher is the shopkeeper. The student buys food for a party.", phrases: ["Do you have any ___?","I’d like a ___ and some ___.","How much is it?","How many do you want?","Anything else? — No, that’s all."], prompts: ["Buy at least 5 things (countable and uncountable).","Ask for the price of 2 things.","Then swap: the student is the shopkeeper."] },
+  game: { name: "I Went to the Market…", how: ["Say: “I went to the market and bought an apple.”","The next player repeats it and adds one more item.","Use a / an / some / two. The first to forget or make a mistake loses."], prompts: ["an apple","some rice","two eggs","a bottle of water","some bread","an orange"] },
+  homework: "Write 6 sentences about what is in your room or bag. Use a, an, the, some, any and 2 plural nouns." },
+
+{ title: "Prepositions: in / on / at", level: "Intermediate-Low",
+  summary: "Time, place and giving directions.",
+  warm: ["Where do you live?", "Where is your phone right now?", "When is your birthday?", "What time does your class start?"],
+  vocab: [["between","在…之间","The bank is between the school and the park."],["next to","紧挨着","The cafe is next to the library."],["behind","在…后面","The ball is behind the door."],["in front of","在…前面","He is standing in front of the school."],["under","在…下面","The cat is under the table."],["opposite","在…对面","The shop is opposite the station."],["corner","拐角","Turn left at the corner."],["near","附近","I live near the park."]],
+  rule: { intro: "in / on / at — use them differently for time and place.",
+    forms: [["TIME  at → clock times, night, noon","at 7:30, at night"],["TIME  on → days and dates","on Monday, on June 12"],["TIME  in → months, years, seasons, parts of the day","in May, in 2024, in summer, in the morning"],["PLACE  in → inside / large areas","in the box, in China, in the city"],["PLACE  on → on a surface","on the table, on the wall"],["PLACE  at → a point or a place of activity","at the bus stop, at school, at home"]],
+    mistakes: [["My birthday is in May 5th.","My birthday is on May 5th."],["I wake up in 7 o’clock.","I wake up at 7 o’clock."],["I live at Beijing.","I live in Beijing."],["She is in the bus stop.","She is at the bus stop."]],
+    tip: "Picture it: AT = a point •  ON = a surface ▭  IN = a space ▢." },
+  practice: [["I was born ___ 2010.","in"],["The class starts ___ 8:30.","at"],["My birthday is ___ June 12.","on"],["The book is ___ the table.","on"],["We live ___ Shanghai.","in"],["She is ___ school now.","at"],["He works ___ night.","at"],["The cat is ___ the box. (inside)","in"]],
+  speak: { scenario: "Asking for directions", setup: "Draw or describe a simple map: a school, bank, café, park and station. The student asks the teacher for directions, then they swap.", phrases: ["Excuse me, where is the ___?","Go straight.","Turn left / right at the corner.","It’s next to / opposite / behind the ___.","It’s about 5 minutes on foot."], prompts: ["Ask for directions to 3 places.","Give directions from the school to the park.","Describe where you live and what is near it."] },
+  game: { name: "Hide and Find", how: ["The teacher hides a small object somewhere in view of the camera.","The student asks yes/no questions: “Is it on the shelf? Is it under the desk?”","Guess in 8 questions. Then swap."], prompts: ["Is it on the…?","Is it in the…?","Is it next to the…?","Is it behind the…?","Is it under the…?"] },
+  homework: "Describe your bedroom in 6 sentences using 6 different prepositions." },
+
+{ title: "Comparing: -er / more / -est", level: "Intermediate",
+  summary: "Comparatives and superlatives.",
+  warm: ["Which is your favorite season, and why?", "What is the best food in your city?", "Who is the tallest person in your family?", "Which is easier for you, English or math?"],
+  vocab: [["expensive","贵的","This phone is expensive."],["cheap","便宜的","The bus is cheap."],["dangerous","危险的","Cars can be dangerous."],["comfortable","舒服的","This chair is comfortable."],["popular","受欢迎的","Football is popular."],["quiet","安静的","The library is quiet."],["crowded","拥挤的","The subway is crowded."],["important","重要的","Sleep is important."]],
+  rule: { intro: "Compare two things with a comparative. Compare three or more with a superlative.",
+    forms: [["Short adjectives: -er + than","tall → taller than, big → bigger than, happy → happier than"],["Long adjectives: more + adjective + than","more expensive than, more interesting than"],["Superlative: the + -est / the most","the tallest, the biggest, the most popular"],["Irregular","good → better → the best,  bad → worse → the worst"],["as … as = the same","He is as tall as me."]],
+    mistakes: [["He is more tall than me.","He is taller than me."],["This is the more expensive.","This is the most expensive."],["She is taller then me.","She is taller than me."],["It is more better.","It is better."]],
+    tip: "Never use more with -er: not “more taller”. And don’t forget than!" },
+  practice: [["My brother is ___ (tall) than me.","taller"],["This bag is ___ (expensive) than that one.","more expensive"],["Summer is the ___ (hot) season.","hottest"],["This is the ___ (good) pizza in town.","best"],["A car is ___ (fast) than a bike.","faster"],["He is the ___ (funny) student in class.","funniest"],["English is ___ (interesting) than history.","more interesting"],["Today is ___ (bad) than yesterday.","worse"]],
+  speak: { scenario: "Help me choose", setup: "The teacher wants to buy something or pick a place to visit (two phones, two cities, two restaurants). The student compares them and gives advice.", phrases: ["I think ___ is better because ___.","It’s cheaper, but ___.","___ is more ___ than ___.","In my opinion, ___ is the best.","They are both ___."], prompts: ["Compare two options in 6 sentences.","Give a final recommendation and say why.","Now compare two things from your own life."] },
+  game: { name: "Superlative Quiz", how: ["The teacher asks a question; the student answers in a full sentence.","Then the student writes 3 questions for the teacher.","One point for each correct full sentence."], prompts: ["What’s the biggest animal?","What’s the longest river in China?","What’s the most popular sport?","What’s the most delicious food?","Who’s the funniest person you know?"] },
+  homework: "Compare two cities, people or phones in 6 sentences. Use 2 superlatives." },
+
+{ title: "Modal Verbs: can, could, should, must", level: "Intermediate",
+  summary: "Ability, polite requests, advice and rules.",
+  warm: ["What can you do really well?", "What should a student do to learn English faster?", "What do you have to do every day?", "Could you tell me about your favorite place?"],
+  vocab: [["permission","许可","I need permission to leave."],["advice","建议","Can I give you some advice?"],["necessary","必要的","It is necessary to wear a helmet."],["polite","礼貌的","Please is a polite word."],["allowed","被允许的","You aren’t allowed to run here."],["borrow","借（入）","Can I borrow your pen?"],["rule","规则","This is a school rule."],["ability","能力","She has the ability to sing."]],
+  rule: { intro: "Modal verbs are followed by the base verb. No -s, no “to”.",
+    forms: [["can = ability / permission","She can swim. Can I sit here?"],["could = polite request","Could you help me, please?"],["should = advice","You should sleep more."],["must = strong rule / necessity","You must wear a seatbelt."],["have to = obligation from outside","I have to get up at 6."],["mustn’t = not allowed;   don’t have to = not necessary","You mustn’t smoke here. You don’t have to come."]],
+    mistakes: [["She cans swim.","She can swim."],["You should to study.","You should study."],["I must to go.","I must go."],["Do you can help me?","Can you help me?"]],
+    tip: "Questions: move the modal first — Can you…? Should I…? Could we…?" },
+  practice: [["She ___ speak three languages. (ability)","can"],["___ I borrow your pen? (polite)","Could / Can"],["You ___ see a doctor. (advice)","should"],["You ___ wear a helmet. (law)","must"],["He ___ get up early; school starts at 7.","has to"],["You ___ run in the hall. (not allowed)","mustn’t"],["Tomorrow is Sunday. I ___ go to school. (not necessary)","don’t have to"],["Fix it: “Does she can swim?”","Can she swim?"]],
+  speak: { scenario: "I have a problem", setup: "The student has a problem (sick, lost phone, can’t sleep, failed a test). The teacher asks questions and gives advice. Then switch.", phrases: ["Could you help me?","What should I do?","You should ___.","Why don’t you ___?","You must ___.","You shouldn’t ___."], prompts: ["Explain your problem in 3 sentences.","Give the teacher advice for their problem.","Ask 2 polite requests (Could you…?)."] },
+  game: { name: "Problem Solver", how: ["The teacher reads a problem card.","The student gives 3 pieces of advice with should / shouldn’t / must.","Swap and let the student read the problems."], prompts: ["I can’t sleep.","I have a big test tomorrow.","My friend is sad.","I lost my phone.","I want to learn English faster."] },
+  homework: "Write 6 sentences: 2 rules (must / mustn’t), 2 pieces of advice (should), 2 polite requests (Could you…?)." },
+
+{ title: "Present Perfect: Experiences", level: "Intermediate",
+  summary: "have / has + past participle. ever, never, for, since.",
+  warm: ["Have you ever been to another city or country?", "What is the best movie you have ever seen?", "How long have you studied English?", "What new thing have you tried recently?"],
+  vocab: [["ever","曾经","Have you ever been to Beijing?"],["never","从未","I have never eaten sushi."],["already","已经","I have already finished."],["yet","（还）没","I haven’t finished yet."],["just","刚刚","She has just arrived."],["since","自从","I have lived here since 2019."],["for","持续（一段时间）","We have lived here for five years."],["experience","经历","It was a great experience."]],
+  rule: { intro: "Use the present perfect to link the past to now — when the exact time is not important.",
+    forms: [["Form: have / has + past participle","I have seen it. She has finished."],["Life experiences","I have been to Shanghai. Have you ever eaten sushi?"],["Just happened / not yet","I have just finished. I haven’t done it yet."],["Unfinished: for + a period, since + a start point","I have lived here for 5 years / since 2019."],["Irregular participles","go → gone / been, see → seen, eat → eaten, do → done, write → written, take → taken"],["Past simple vs. present perfect","I went to Beijing in 2022. (finished time)  I have been to Beijing. (no time)"]],
+    mistakes: [["I have went to Shanghai.","I have been to Shanghai."],["I have seen him yesterday.","I saw him yesterday."],["She have finished.","She has finished."],["I live here since 2020.","I have lived here since 2020."]],
+    tip: "With a finished time (yesterday, last year, in 2020) use the past simple, not the present perfect." },
+  practice: [["I ___ (see) that movie three times.","have seen"],["She ___ (never / eat) sushi.","has never eaten"],["___ you ever ___ (be) to Japan?","Have … been"],["We ___ (live) here for ten years.","have lived"],["He ___ (just / finish) his homework.","has just finished"],["I ___ (not / do) it yet.","haven’t done"],["Choose: “I (saw / have seen) him yesterday.”","saw"],["Choose: “I (lived / have lived) here since 2019.”","have lived"]],
+  speak: { scenario: "Have you ever…?", setup: "The student and teacher interview each other about experiences. After every “Yes, I have”, ask follow-up questions in the past simple.", phrases: ["Have you ever ___?","Yes, I have. / No, I haven’t.","I have never ___.","When did you ___?","What did you do there? / How was it?"], prompts: ["Ask the teacher 5 “Have you ever…?” questions.","Answer 5 questions and give details in the past simple.","Talk about the most interesting experience you have had."] },
+  game: { name: "Have You Ever…? Challenge", how: ["Take turns asking “Have you ever…?” from the list.","For each “Yes”, the asker must ask 2 past-simple follow-up questions.","Score 1 point for each correct follow-up question."], prompts: ["ridden a horse","eaten something strange","met a famous person","been on a plane","broken a bone","lost your phone"] },
+  homework: "Write 6 sentences about your experiences: 3 with have + ever / never and 3 with for / since." },
 ];
 
-const flow = [
-  ["0:00–0:05", "Warm-Up", "Greet the student, review last session's homework."],
-  ["0:05–0:10", "Introduce", "Present today's focus with clear examples."],
-  ["0:10–0:20", "Guided Practice", "Practice together — repetition, sentences, role-play."],
-  ["0:20–0:27", "Free Practice", "Apply the focus in open conversation."],
-  ["0:27–0:30", "Wrap-Up", "Recap, assign homework, say goodbye."],
+const planSteps = [
+  ["0–5 min","Conversation Warm-Up","Simple questions about their day, hobbies and family. Full sentences. Correct gently."],
+  ["5–10 min","Vocabulary Building","Learn 8 words. Meaning, example, then the student makes their own sentences."],
+  ["10–15 min","Grammar & Sentence Structure","One grammar idea. Review the examples, then practice together."],
+  ["15–23 min","Speaking Practice","A real-life roleplay. The student speaks, not reads."],
+  ["23–27 min","Interactive Game","A short game that uses today’s language."],
+  ["27–30 min","Review & Wrap-Up","What did we learn? One thing the student remembers. Homework."],
 ];
 
 const icebreakers = [
@@ -252,10 +342,15 @@ function introSlides(){
 }
 function topicSlides(topic){
   return [
-    { type: "title", badge: "Skill-Based", title: topic.title, level: topic.level, note: "Fill in the fields below before your session begins." },
-    { type: "focus", title: topic.title, focus: topic.focus },
-    { type: "practice", title: topic.title },
-    { type: "wrap", title: topic.title },
+    { type: "title", badge: "Grammar Lesson", title: topic.title, level: topic.level, note: topic.summary },
+    { type: "plan", topic },
+    { type: "warm", topic },
+    { type: "vocab", topic },
+    { type: "rule", topic },
+    { type: "drill", topic },
+    { type: "speak", topic },
+    { type: "game", topic },
+    { type: "wrap", topic },
   ];
 }
 
@@ -264,7 +359,7 @@ const lessons = [
     sub: "First-session welcome, teacher introduction, and level check." },
   ...topics.map((t, i) => ({
     id: i + 1, label: `Lesson ${i+1}`, title: t.title, slides: topicSlides(t),
-    sub: "Fill-in lesson template — title, focus areas, teach & practice, wrap-up.",
+    sub: "30-minute lesson: warm-up, vocabulary, grammar, practice, speaking, game, wrap-up.",
   })),
 ];
 
@@ -324,58 +419,160 @@ function titleSlideHTML(s){
     </div>`;
 }
 
-function focusSlideHTML(s){
-  const colors = ['#1f8a5f','#1e4e8c','#f2a73b'];
+const SEG = {
+  warm:  ['0–5 MIN · CONVERSATION WARM-UP', '#1f8a5f'],
+  vocab: ['5–10 MIN · VOCABULARY BUILDING', '#1e4e8c'],
+  rule:  ['10–15 MIN · GRAMMAR & SENTENCE STRUCTURE', '#f2a73b'],
+  drill: ['10–15 MIN · GRAMMAR PRACTICE', '#f2a73b'],
+  speak: ['15–23 MIN · SPEAKING PRACTICE', '#1f8a5f'],
+  game:  ['23–27 MIN · INTERACTIVE GAME', '#1e4e8c'],
+  wrap:  ['27–30 MIN · REVIEW & WRAP-UP', '#1f8a5f'],
+};
+const E = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function head(key, title){
+  return `<div class="eyebrow" style="color:${SEG[key][1]}">${SEG[key][0]}</div><h1 style="font-size:1.7em;margin-bottom:0.45em;">${E(title)}</h1>`;
+}
+
+function planSlideHTML(s){
   return `
-    <div class="slide light">
-      <div class="eyebrow">FOCUS AREAS</div>
-      <h1 style="font-size:1.9em;">${s.title}</h1>
-      <div>
-        ${s.focus.map(([name,desc],i) => `
-          <div class="focus-row">
-            <span class="icon-circle" style="background:${colors[i%3]}">${i+1}</span>
-            <div><b>${name}</b><p>${desc}</p></div>
-          </div>`).join('')}
+    <div class="slide tint">
+      <div class="eyebrow">TODAY’S 30-MINUTE PLAN</div>
+      <h1 style="font-size:1.7em;margin-bottom:0.4em;">${E(s.topic.title)}</h1>
+      <div class="card" style="flex:1;">
+        ${planSteps.map(([time,step,desc]) => `
+          <div class="flow-item"><div class="flow-time">${time}</div><div><b>${step}</b><span>${desc}</span></div></div>`).join('')}
       </div>
     </div>`;
 }
 
-function practiceSlideHTML(s){
+function warmSlideHTML(s){
   return `
     <div class="slide light">
-      <div class="eyebrow">TEACH &amp; PRACTICE</div>
-      <h1 style="font-size:1.5em;">${s.title}</h1>
-      <div class="two-col">
+      ${head('warm', 'Warm-Up Questions')}
+      <div style="overflow-y:auto; flex:1;">
+        ${s.topic.warm.map((q,i) => `<div class="ib-row"><span class="ib-num">${i+1}</span><span>${E(q)}</span></div>`).join('')}
+        <div style="font-size:0.84em; color:var(--ink-soft); margin:0.8em 0 0.4em;">Teacher reminders: ask the student to answer in complete sentences · correct mistakes naturally, don’t interrupt.</div>
+        <input class="line-input" type="text" data-field="warm_notes" placeholder="Notes about the student’s answers…">
+      </div>
+    </div>`;
+}
+
+function vocabSlideHTML(s){
+  return `
+    <div class="slide light">
+      ${head('vocab', 'New Words')}
+      <div class="card" style="flex:1; padding:0.5em 1em;">
+        ${s.topic.vocab.map(([w,zh,ex]) => `
+          <div style="display:grid; grid-template-columns: 1.3fr 0.9fr 3fr; gap:0.8em; padding:0.42em 0; border-bottom:1px solid var(--line); align-items:baseline;">
+            <b style="color:var(--blue-deep);">${E(w)}</b><span style="color:var(--ink-soft);">${E(zh)}</span><span>${E(ex)}</span>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:0.5em;">
+        <div style="font-size:0.78em; color:var(--ink-soft); margin-bottom:0.2em;">Now the student makes their own sentence with each word. Write good ones here:</div>
+        <input class="line-input" type="text" data-field="vocab_s1" placeholder="1. ..." style="margin-bottom:0.4em;">
+        <input class="line-input" type="text" data-field="vocab_s2" placeholder="2. ..." style="margin-bottom:0;">
+      </div>
+    </div>`;
+}
+
+function ruleSlideHTML(s){
+  const r = s.topic.rule;
+  return `
+    <div class="slide light">
+      ${head('rule', s.topic.title)}
+      <p style="margin:0 0 0.6em; font-size:0.95em; color:var(--ink-soft);">${E(r.intro)}</p>
+      <div class="two-col" style="grid-template-columns: 1.5fr 1fr;">
         <div class="card tintbg">
-          <h4>SUGGESTED FLOW</h4>
-          ${flow.map(([time,step,desc]) => `
-            <div class="flow-item">
-              <div class="flow-time">${time}</div>
-              <div><b>${step}</b><span>${desc}</span></div>
-            </div>`).join('')}
+          <h4>THE RULE</h4>
+          ${r.forms.map(([a,b]) => `<div style="margin-bottom:0.55em;"><b style="font-size:0.92em;">${E(a)}</b>${b ? `<div style="color:var(--green-deep); font-size:0.88em;">${E(b)}</div>` : ''}</div>`).join('')}
         </div>
         <div class="card">
-          <h4 style="color:#1e4e8c;">PRACTICE SPACE</h4>
-          <p style="font-size:0.85em; color:var(--ink-soft); font-style:italic; margin:0 0 0.9em;">Write 3–4 example sentences or questions to practice this focus area.</p>
-          ${[1,2,3,4].map(n => `<input class="line-input" type="text" data-field="practice${n}" placeholder="${n}. ...">`).join('')}
+          <h4 style="color:#b3402f;">COMMON MISTAKES</h4>
+          ${r.mistakes.map(([w,c]) => `<div style="margin-bottom:0.55em; font-size:0.88em;"><div style="color:#b3402f; text-decoration:line-through;">✗ ${E(w)}</div><div style="color:var(--green-deep); font-weight:600;">✓ ${E(c)}</div></div>`).join('')}
+          <div style="font-size:0.8em; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:0.5em; margin-top:0.4em;">💡 ${E(r.tip)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function drillSlideHTML(s){
+  return `
+    <div class="slide light" id="drillSlide">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>${head('drill', 'Practice Sentences')}</div>
+        <button class="clear-btn" id="ansBtn" style="margin-top:0.3em;">Show answers (teacher)</button>
+      </div>
+      <div class="card" style="flex:1; padding:0.6em 1.1em;">
+        ${s.topic.practice.map(([q,a],i) => `
+          <div style="display:flex; gap:0.7em; padding:0.4em 0; border-bottom:1px solid var(--line); align-items:baseline;">
+            <b style="color:var(--green-deep); width:1.4em;">${i+1}.</b>
+            <span style="flex:1;">${E(q)}</span>
+            <span class="ans" style="visibility:hidden; color:var(--green-deep); font-weight:700;">${E(a)}</span>
+          </div>`).join('')}
+      </div>
+      <div style="font-size:0.8em; color:var(--ink-soft); margin-top:0.5em;">Student answers aloud first. Fix mistakes together, then say the full sentence again.</div>
+    </div>`;
+}
+
+function speakSlideHTML(s){
+  const sp = s.topic.speak;
+  return `
+    <div class="slide tint">
+      ${head('speak', 'Roleplay: ' + sp.scenario)}
+      <p style="margin:0 0 0.6em; font-size:0.95em;">${E(sp.setup)}</p>
+      <div class="two-col">
+        <div class="card">
+          <h4>USEFUL PHRASES</h4>
+          ${sp.phrases.map(x => `<div style="margin-bottom:0.4em; font-size:0.92em;">• ${E(x)}</div>`).join('')}
+        </div>
+        <div class="card">
+          <h4 style="color:#1e4e8c;">YOUR TASKS</h4>
+          ${sp.prompts.map((x,i) => `<div style="display:flex; gap:0.6em; margin-bottom:0.5em; font-size:0.92em;"><span class="chk" data-chk="sp${i}"></span><span>${E(x)}</span></div>`).join('')}
+          <div style="font-size:0.78em; color:var(--ink-soft); margin-top:0.6em;">Encourage the student to speak on their own, not read from a script.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function gameSlideHTML(s){
+  const g = s.topic.game;
+  return `
+    <div class="slide light">
+      ${head('game', 'Game: ' + g.name)}
+      <div class="two-col" style="grid-template-columns: 1.2fr 1fr;">
+        <div class="card tintbg">
+          <h4>HOW TO PLAY</h4>
+          ${g.how.map((x,i) => `<div style="display:flex; gap:0.7em; margin-bottom:0.7em;"><span class="ib-num" style="width:1.7em;height:1.7em;">${i+1}</span><span style="font-size:0.95em;">${E(x)}</span></div>`).join('')}
+          <div style="font-size:0.8em; color:var(--ink-soft);">Everything in English during the game!</div>
+        </div>
+        <div class="card">
+          <h4 style="color:#1e4e8c;">IDEAS TO USE</h4>
+          ${g.prompts.map(x => `<div style="margin-bottom:0.4em; font-size:0.92em;">• ${E(x)}</div>`).join('')}
         </div>
       </div>
     </div>`;
 }
 
 function wrapSlideHTML(s){
+  const t = s.topic;
   return `
     <div class="slide tint">
-      <div class="eyebrow">WRAP-UP</div>
-      <h1 style="font-size:1.5em;">${s.title}</h1>
+      ${head('wrap', 'Review & Homework')}
       <div class="two-col">
         <div class="card">
-          <h4>KEY VOCABULARY &amp; PHRASES</h4>
-          ${[1,2,3,4].map(n => `<input class="line-input" type="text" data-field="vocab${n}" placeholder="${n}. ...">`).join('')}
+          <h4>REVIEW TOGETHER</h4>
+          <div class="question-row"><span class="chk" data-chk="rv0"></span><span>Say the 8 new words again</span></div>
+          <div class="question-row"><span class="chk" data-chk="rv1"></span><span>Say the grammar rule in your own words</span></div>
+          <div class="question-row"><span class="chk" data-chk="rv2"></span><span>Fix one common mistake</span></div>
+          <div class="question-row"><span class="chk" data-chk="rv3"></span><span>Student shares one thing they learned</span></div>
+          <input class="line-input" type="text" data-field="learned" placeholder="Student said they learned…" style="margin-top:0.6em;">
         </div>
         <div class="card">
-          <h4 style="color:#1e4e8c;">HOMEWORK &amp; SESSION NOTES</h4>
-          ${[1,2,3,4].map(n => `<input class="line-input" type="text" data-field="notes${n}" placeholder="...">`).join('')}
+          <h4 style="color:#1e4e8c;">HOMEWORK</h4>
+          <div style="font-size:0.98em; margin-bottom:0.8em; font-weight:600;">${E(t.homework)}</div>
+          <h4 style="color:#1e4e8c;">NOTES FOR NEXT SESSION</h4>
+          <input class="line-input" type="text" data-field="notes1" placeholder="...">
+          <input class="line-input" type="text" data-field="notes2" placeholder="...">
         </div>
       </div>
     </div>`;
@@ -460,8 +657,13 @@ function introWrapSlideHTML(){
 function slideHTML(s){
   switch(s.type){
     case 'title': return titleSlideHTML(s);
-    case 'focus': return focusSlideHTML(s);
-    case 'practice': return practiceSlideHTML(s);
+    case 'plan': return planSlideHTML(s);
+    case 'warm': return warmSlideHTML(s);
+    case 'vocab': return vocabSlideHTML(s);
+    case 'rule': return ruleSlideHTML(s);
+    case 'drill': return drillSlideHTML(s);
+    case 'speak': return speakSlideHTML(s);
+    case 'game': return gameSlideHTML(s);
     case 'wrap': return wrapSlideHTML(s);
     case 'teacher': return teacherSlideHTML();
     case 'icebreaker': return icebreakerSlideHTML();
@@ -498,6 +700,15 @@ function wireInputs(){
       save(key, pill.dataset.band);
     });
   });
+  const ansBtn = stage.querySelector('#ansBtn');
+  if(ansBtn){
+    ansBtn.addEventListener('click', () => {
+      const show = ansBtn.dataset.on !== '1';
+      ansBtn.dataset.on = show ? '1' : '0';
+      stage.querySelectorAll('.ans').forEach(a => a.style.visibility = show ? 'visible' : 'hidden');
+      ansBtn.textContent = show ? 'Hide answers' : 'Show answers (teacher)';
+    });
+  }
   const avatarCircle = stage.querySelector('#avatarCircle');
   const avatarFile = stage.querySelector('#avatarFile');
   if(avatarCircle && avatarFile){

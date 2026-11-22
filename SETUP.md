@@ -72,3 +72,7 @@ Dashboards show only real data. With no matches they show an empty state.
 5. Matched pairs can message each other on their dashboards. You can read every conversation in **Admin → Matches → open a match**. For under-18 students, emails, phone numbers and links are blocked.
 
 Still not built: automatic email reminders/notifications, profile photo upload, server-side grading of assessments.
+
+## Lessons (updated)
+
+The Lesson Library now has 10 grammar lessons (plus Lesson 0, the level check). Each one follows the same 30 minutes: plan, warm-up, vocabulary (with Chinese), grammar rule with common mistakes, practice sentences (teacher can show answers), speaking roleplay, game, and review/homework. The older Word and PowerPoint templates were removed because they no longer match.

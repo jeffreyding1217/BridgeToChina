@@ -76,3 +76,14 @@ Still not built: automatic email reminders/notifications, profile photo upload, 
 ## Lessons
 
 The Lesson Library has 60 topics plus Lesson 0 (welcome and level check): Beginner 1–20, Intermediate 21–40, Advanced 41–60. Every lesson follows the same 30 minutes: plan, warm-up, vocabulary (with Chinese), language focus with common mistakes, practice sentences (teacher can show answers), speaking roleplay, game, and review/homework. The older Word and PowerPoint templates were removed because they no longer match.
+
+## Public website pages
+
+The site is now separate pages: `index.html` (home), `about.html`, `how-it-works.html`, `volunteers.html`, `students.html`, `curriculum.html`, `faq.html`, `contact.html`. They share `site.css` and `site.js`, so upload those too. All made-up examples, statistics, testimonials, sample profiles and fake social links were removed.
+
+- **Contact page:** open `contact.html` and put your public email between the quotes in `var CONTACT_EMAIL = "";`. Until you do, it says the contact address has not been added.
+- **Not written yet:** Privacy Policy and Terms of Service pages. They are not linked anywhere. Because you collect personal information, including from minors, have these written and reviewed properly before launch.
+
+## Chinese in lessons
+
+Beginner (1–20): Chinese vocabulary, plus Chinese explanations of the language focus. Intermediate and Advanced: Chinese is hidden. The teacher can click "Show Chinese · 显示中文" on the vocabulary slide if needed.

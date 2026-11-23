@@ -903,8 +903,10 @@ T("Independent Discussions and Group Debates","Lead and join a discussion with c
  "Prepare notes for a debate on a topic of your choice with arguments for both sides."),
 ];
 
+const BEG_ZH = [["用简短清楚的句子介绍自己。先说“I am”或“My name is”。", "先说名字，再说一个信息，最后反问：“What about you?”（你呢？）"], ["根据时间和场合选择合适的问候语和礼貌用语。", "“Excuse me”用来引起别人注意；“Sorry”表示道歉；“Pardon?”请对方再说一遍。"], ["数字、日期和时间各有自己的说法规则。", "-teen 重音在后面（thir-TEEN），-ty 重音在前面（THIR-ty）。"], ["说家人时用 have / has，用 ’s 表示“谁的”。", "older / younger 用来比较年龄。日常口语说 my older brother。"], ["英语里形容词放在名词前面，而且不加 -s。", "把颜色词看作描述词：颜色词直接放在名词前。"], ["表达喜好用 like / love / don’t like，礼貌点餐用 I’d like。", "water, rice, bread 是不可数名词：some water, a bowl of rice, a piece of bread。"], ["描述动物用 have / has、is / are 和 can。", "can 后面永远用动词原形：can fly, can swim, can run。"], ["谈论科目用 have、like 和 be good at；在课堂上要礼貌地求助。", "I’m good at + 名词 / 动词-ing：good at math, good at drawing。"], ["描述习惯用一般现在时。he / she / it 后面动词加 -s 或 -es。", "时间词：at + 钟点（at 7），in + 一天中的时段（in the morning），on + 星期（on Monday）。"], ["like、love、enjoy、hate 后面通常用动词 + -ing。", "球类运动用 play，-ing 类活动用 go，乐器用 play the。"], ["身高体形用 is，头发和眼睛用 have / has，眼镜和衣服用 wear。", "头上所有的头发用 hair，不加 -s。"], ["用 there is（单数）和 there are（复数）说明某处有什么。", "表示“有”时用 there is / there are，不要用 have。"], ["说天气用 It is + 形容词，或 It is + 动词-ing。主语永远是 it。", "天气的主语是 it：it rains, it snows, it’s sunny。"], ["问价格用 How much is / are。pants、shoes、glasses 是复数。", "shoes, pants, jeans, glasses 是复数：用 these / those 和 are。"], ["说哪里不舒服用 have a + 病症，或 my ___ hurts；给建议用 should。", "常见病症用 have a：have a cold, a fever, a cough, a headache。"], ["用 be + 形容词说感受。-ed 形容词表示人的感受，-ing 形容词表示引起感受的事物。", "-ed = 人的感受（bored, excited）；-ing = 引起感受的事物（boring, exciting）。"], ["很多动词有固定搭配，要连在一起记。", "把动词和搭档一起记：do homework, make dinner, take a bus, watch TV, listen to music。"], ["介词表示事物在哪里。at、on、in 最常用。", "想象一下：AT = 一个点，ON = 一个表面，IN = 一个空间。"], ["疑问句要改变词序：疑问词 + do / does / is / are + 主语。", "用 do / does 时，主要动词用原形：Where does he live?（不是 lives）。"], ["英语动词用变化来表示时间。现在 = 习惯或此刻，过去 = 已经结束，将来 = will + 动词或 going to。", "动词要和时间词匹配：yesterday → 过去；tomorrow → will / going to。"]];
+const SEG_ZH = { warm:"对话热身", vocab:"词汇", rule:"语法与句型", drill:"语法练习", speak:"口语练习", game:"互动游戏", wrap:"复习与总结" };
 const topics = [
-  ...BEG.map(t => ({ ...t, level: "Beginner" })),
+  ...BEG.map((t, i) => ({ ...t, level: "Beginner", introZh: BEG_ZH[i][0], tipZh: BEG_ZH[i][1] })),
   ...INT.map(t => ({ ...t, level: "Intermediate" })),
   ...ADV.map(t => ({ ...t, level: "Advanced" })),
 ];
@@ -1058,8 +1060,9 @@ const SEG = {
   wrap:  ['27–30 MIN · REVIEW & WRAP-UP', '#1f8a5f'],
 };
 const E = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function head(key, title){
-  return `<div class="eyebrow" style="color:${SEG[key][1]}">${SEG[key][0]}</div><h1 style="font-size:1.7em;margin-bottom:0.45em;">${E(title)}</h1>`;
+function head(key, title, topic){
+  const zh = topic && topic.level === 'Beginner' ? ' · ' + SEG_ZH[key] : '';
+  return `<div class="eyebrow" style="color:${SEG[key][1]}">${SEG[key][0]}${zh}</div><h1 style="font-size:1.7em;margin-bottom:0.45em;">${E(title)}</h1>`;
 }
 
 function planSlideHTML(s){
@@ -1077,7 +1080,7 @@ function planSlideHTML(s){
 function warmSlideHTML(s){
   return `
     <div class="slide light">
-      ${head('warm', 'Warm-Up Questions')}
+      ${head('warm', 'Warm-Up Questions', s.topic)}
       <div style="overflow-y:auto; flex:1;">
         ${s.topic.warm.map((q,i) => `<div class="ib-row"><span class="ib-num">${i+1}</span><span>${E(q)}</span></div>`).join('')}
         <div style="font-size:0.84em; color:var(--ink-soft); margin:0.8em 0 0.4em;">Teacher reminders: ask the student to answer in complete sentences · correct mistakes naturally, don’t interrupt.</div>
@@ -1087,13 +1090,18 @@ function warmSlideHTML(s){
 }
 
 function vocabSlideHTML(s){
+  const beginner = s.topic.level === 'Beginner';
+  const zhStyle = beginner ? '' : 'display:none;';
   return `
-    <div class="slide light">
-      ${head('vocab', 'New Words')}
+    <div class="slide light" id="vocabSlide">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>${head('vocab', 'New Words', s.topic)}</div>
+        ${beginner ? '' : '<button class="clear-btn" id="zhBtn" style="margin-top:0.3em;">Show Chinese · 显示中文</button>'}
+      </div>
       <div class="card" style="flex:1; padding:0.5em 1em;">
         ${s.topic.vocab.map(([w,zh,ex]) => `
-          <div style="display:grid; grid-template-columns: 1.3fr 0.9fr 3fr; gap:0.8em; padding:0.42em 0; border-bottom:1px solid var(--line); align-items:baseline;">
-            <b style="color:var(--blue-deep);">${E(w)}</b><span style="color:var(--ink-soft);">${E(zh)}</span><span>${E(ex)}</span>
+          <div style="display:grid; grid-template-columns: ${beginner ? '1.3fr 0.9fr 3fr' : '1.3fr 3fr'}; gap:0.8em; padding:0.42em 0; border-bottom:1px solid var(--line); align-items:baseline;" class="vrow">
+            <b style="color:var(--blue-deep);">${E(w)}</b><span class="zhcol" style="color:var(--ink-soft); ${zhStyle}">${E(zh)}</span><span>${E(ex)}</span>
           </div>`).join('')}
       </div>
       <div style="margin-top:0.5em;">
@@ -1108,8 +1116,8 @@ function ruleSlideHTML(s){
   const r = s.topic.rule;
   return `
     <div class="slide light">
-      ${head('rule', s.topic.title)}
-      <p style="margin:0 0 0.6em; font-size:0.95em; color:var(--ink-soft);">${E(r.intro)}</p>
+      ${head('rule', s.topic.title, s.topic)}
+      <p style="margin:0 0 0.6em; font-size:0.95em; color:var(--ink-soft);">${E(r.intro)}${s.topic.introZh ? '<br><span style="color:var(--ink);">' + E(s.topic.introZh) + '</span>' : ''}</p>
       <div class="two-col" style="grid-template-columns: 1.5fr 1fr;">
         <div class="card tintbg">
           <h4>THE RULE</h4>
@@ -1118,7 +1126,7 @@ function ruleSlideHTML(s){
         <div class="card">
           <h4 style="color:#b3402f;">COMMON MISTAKES</h4>
           ${r.mistakes.map(([w,c]) => `<div style="margin-bottom:0.55em; font-size:0.88em;"><div style="color:#b3402f; text-decoration:line-through;">✗ ${E(w)}</div><div style="color:var(--green-deep); font-weight:600;">✓ ${E(c)}</div></div>`).join('')}
-          <div style="font-size:0.8em; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:0.5em; margin-top:0.4em;">💡 ${E(r.tip)}</div>
+          <div style="font-size:0.8em; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:0.5em; margin-top:0.4em;">💡 ${E(r.tip)}${s.topic.tipZh ? '<br>' + E(s.topic.tipZh) : ''}</div>
         </div>
       </div>
     </div>`;
@@ -1128,7 +1136,7 @@ function drillSlideHTML(s){
   return `
     <div class="slide light" id="drillSlide">
       <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-        <div>${head('drill', 'Practice Sentences')}</div>
+        <div>${head('drill', 'Practice Sentences', s.topic)}</div>
         <button class="clear-btn" id="ansBtn" style="margin-top:0.3em;">Show answers (teacher)</button>
       </div>
       <div class="card" style="flex:1; padding:0.6em 1.1em;">
@@ -1147,7 +1155,7 @@ function speakSlideHTML(s){
   const sp = s.topic.speak;
   return `
     <div class="slide tint">
-      ${head('speak', 'Roleplay: ' + sp.scenario)}
+      ${head('speak', 'Roleplay: ' + sp.scenario, s.topic)}
       <p style="margin:0 0 0.6em; font-size:0.95em;">${E(sp.setup)}</p>
       <div class="two-col">
         <div class="card">
@@ -1167,7 +1175,7 @@ function gameSlideHTML(s){
   const g = s.topic.game;
   return `
     <div class="slide light">
-      ${head('game', 'Game: ' + g.name)}
+      ${head('game', 'Game: ' + g.name, s.topic)}
       <div class="two-col" style="grid-template-columns: 1.2fr 1fr;">
         <div class="card tintbg">
           <h4>HOW TO PLAY</h4>
@@ -1186,7 +1194,7 @@ function wrapSlideHTML(s){
   const t = s.topic;
   return `
     <div class="slide tint">
-      ${head('wrap', 'Review & Homework')}
+      ${head('wrap', 'Review & Homework', t)}
       <div class="two-col">
         <div class="card">
           <h4>REVIEW TOGETHER</h4>
@@ -1329,6 +1337,16 @@ function wireInputs(){
       save(key, pill.dataset.band);
     });
   });
+  const zhBtn = stage.querySelector('#zhBtn');
+  if(zhBtn){
+    zhBtn.addEventListener('click', () => {
+      const show = zhBtn.dataset.on !== '1';
+      zhBtn.dataset.on = show ? '1' : '0';
+      stage.querySelectorAll('.vrow').forEach(r => r.style.gridTemplateColumns = show ? '1.3fr 0.9fr 3fr' : '1.3fr 3fr');
+      stage.querySelectorAll('.zhcol').forEach(c => c.style.display = show ? '' : 'none');
+      zhBtn.textContent = show ? 'Hide Chinese · 隐藏中文' : 'Show Chinese · 显示中文';
+    });
+  }
   const ansBtn = stage.querySelector('#ansBtn');
   if(ansBtn){
     ansBtn.addEventListener('click', () => {

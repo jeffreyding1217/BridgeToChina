@@ -1630,17 +1630,15 @@ const BEG_ZH = [["用简短清楚的句子介绍自己。先说“I am”或“M
 const SEG_ZH = { warm:"对话热身", vocab:"词汇", rule:"语法与句型", drill:"语法练习", speak:"口语练习", game:"互动游戏", wrap:"复习与总结" };
 const topics = [
   ...BEG.map((t, i) => ({ ...t, level: "Beginner", introZh: BEG_ZH[i][0], tipZh: BEG_ZH[i][1] })),
+  ...BEG2.map((t, i) => ({ ...t, level: "Beginner", introZh: BEG2_ZH[i][0], tipZh: BEG2_ZH[i][1] })),
   ...INT.map(t => ({ ...t, level: "Intermediate" })),
+  ...INT2.map(t => ({ ...t, level: "Intermediate" })),
   ...ADV.map(t => ({ ...t, level: "Advanced" })),
-  ...BEG2.map((t, i) => ({ ...t, level: "Beginner", group: "Beginner · more topics", introZh: BEG2_ZH[i][0], tipZh: BEG2_ZH[i][1] })),
-  ...INT2.map(t => ({ ...t, level: "Intermediate", group: "Intermediate · more topics" })),
 ];
 const LEVEL_INFO = {
-  "Beginner": "Topics 1–20 · Basic vocabulary, sentence construction, everyday conversations, confidence",
-  "Intermediate": "Topics 21–40 · Developing communication: complex sentences, storytelling, opinions",
-  "Advanced": "Topics 41–60 · Fluency and critical thinking: sophisticated vocabulary and complex grammar",
-  "Beginner · more topics": "Topics 61–90 · More beginner vocabulary and grammar: everyday words, questions, can / can’t, there is / there are",
-  "Intermediate · more topics": "Topics 91–120 · Practical communication: phone calls, travel, advice, writing, and key grammar",
+  "Beginner": "Topics 1–50 · Basic vocabulary, sentence construction, everyday conversations, confidence",
+  "Intermediate": "Topics 51–100 · Practical communication: complex sentences, storytelling, opinions, travel, writing",
+  "Advanced": "Topics 101–120 · Fluency and critical thinking: sophisticated vocabulary and complex grammar",
 };
 
 const planSteps = [
@@ -1730,7 +1728,7 @@ function renderSidebar(){
   sidebar.innerHTML = '';
   let lastLevel = null;
   lessons.forEach(l => {
-    const lvl = l.id === 0 ? 'Start here' : (topics[l.id - 1].group || topics[l.id - 1].level);
+    const lvl = l.id === 0 ? 'Start here' : topics[l.id - 1].level;
     if (lvl !== lastLevel) {
       const h = document.createElement('div');
       h.className = 'side-head';
@@ -2001,7 +1999,7 @@ function levelCheckSlideHTML(s){
 }
 
 function introWrapSlideHTML(){
-  const bands = [["Beginner","#1f8a5f"],["Beginner-High","#3e8f6b"],["Intermediate","#1e4e8c"],["Intermediate-High","#f2a73b"]];
+  const bands = [["Beginner","#1f8a5f"],["Beginner-High","#3e8f6b"],["Intermediate","#1e4e8c"],["Intermediate-High","#f2a73b"],["Advanced","#b5651d"]];
   return `
     <div class="slide tint">
       <div class="eyebrow">WRAP-UP</div>
@@ -2009,11 +2007,22 @@ function introWrapSlideHTML(){
       <div style="display:flex; gap:0.7em; margin-bottom:0.8em;">
         ${bands.map(([label,color]) => `<div class="band-pill" style="border-color:${color};" data-band="${label}" data-color="${color}">${label}</div>`).join('')}
       </div>
-      <div class="card" style="flex:1;">
+      <div class="card" style="flex:none;">
         <h4>FIRST REGULAR LESSON PLAN</h4>
-        <input class="line-input" type="text" data-field="plan_topic" placeholder="Recommended starting topic...">
-        <input class="line-input" type="text" data-field="plan_time" placeholder="Suggested weekly time...">
-        <input class="line-input" type="text" data-field="plan_notes" placeholder="Notes for the next volunteer / admin...">
+        <div style="display:flex; gap:0.8em;">
+          <input class="line-input" type="text" data-field="plan_topic" placeholder="Recommended starting topic..." style="flex:1.4;">
+          <input class="line-input" type="text" data-field="plan_time" placeholder="Suggested weekly time..." style="flex:1;">
+        </div>
+      </div>
+      <div class="card" style="flex:1; min-height:0; display:flex; flex-direction:column; margin-top:0.6em;">
+        <h4>HOMEWORK · PICK 3 TOPICS TO REVIEW</h4>
+        <p style="margin:0 0 0.4em; font-size:0.85em;">Look at the topics for the chosen level. The student picks 3 they want to review. Write the numbers below.</p>
+        <div id="hwList" style="flex:1; min-height:0; overflow:auto; columns:3; column-gap:1em; font-size:0.72em; line-height:1.5; border:1px solid var(--line); border-radius:8px; padding:0.4em 0.7em;"></div>
+        <div style="display:flex; gap:0.6em; margin-top:0.5em;">
+          <input class="line-input" type="text" data-field="hw_topic1" placeholder="Topic 1 (number)..." style="flex:1;">
+          <input class="line-input" type="text" data-field="hw_topic2" placeholder="Topic 2..." style="flex:1;">
+          <input class="line-input" type="text" data-field="hw_topic3" placeholder="Topic 3..." style="flex:1;">
+        </div>
       </div>
     </div>`;
 }
@@ -2050,6 +2059,14 @@ function wireInputs(){
       save(key, chk.classList.contains('checked') ? '1' : '0');
     });
   });
+  function updateHw(band){
+    const box = stage.querySelector('#hwList'); if(!box) return;
+    const lvl = !band ? null : band.startsWith('Beginner') ? 'Beginner' : band.startsWith('Intermediate') ? 'Intermediate' : 'Advanced';
+    if(!lvl){ box.textContent = 'Choose the starting level above to see its topics.'; return; }
+    box.innerHTML = topics.map((t, i) => ({ t, n: i + 1 })).filter(x => x.t.level === lvl)
+      .map(x => `<div style="break-inside:avoid;"><b>${x.n}.</b> ${E(x.t.title)}</div>`).join('');
+  }
+  updateHw(load('band_selected'));
   stage.querySelectorAll('.band-pill').forEach(pill => {
     const key = 'band_selected';
     if(load(key) === pill.dataset.band){
@@ -2062,6 +2079,7 @@ function wireInputs(){
       pill.style.background = pill.dataset.color;
       pill.style.color = '#fff';
       save(key, pill.dataset.band);
+      updateHw(pill.dataset.band);
     });
   });
   const zhBtn = stage.querySelector('#zhBtn');

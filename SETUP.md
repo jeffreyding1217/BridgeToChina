@@ -75,7 +75,7 @@ Still not built: automatic email reminders/notifications, profile photo upload, 
 
 ## Lessons
 
-The Lesson Library has 120 topics plus Lesson 0 (welcome and level check): Beginner 1–20 and 61–90, Intermediate 21–40 and 91–120, Advanced 41–60. Every lesson follows the same 30 minutes: plan, warm-up, vocabulary (with Chinese), language focus with common mistakes, practice sentences (teacher can show answers), speaking roleplay, game, and review/homework. The older Word and PowerPoint templates were removed because they no longer match.
+The Lesson Library has 120 topics plus Lesson 0 (welcome and level check): Beginner 1–50, Intermediate 51–100, Advanced 101–120. Every lesson follows the same 30 minutes: plan, warm-up, vocabulary (with Chinese), language focus with common mistakes, practice sentences (teacher can show answers), speaking roleplay, game, and review/homework. The older Word and PowerPoint templates were removed because they no longer match.
 
 ## Public website pages
 
@@ -101,3 +101,5 @@ The site now has two complete versions instead of mixed pages:
 
 
 The lessons 61–120 were also written by Claude (including Chinese glosses and answer keys) and should be read by a fluent English speaker before you rely on them.
+
+The first-day lesson (Lesson 0) now ends with a homework card: the student picks 3 topics to review from the list for the chosen level.

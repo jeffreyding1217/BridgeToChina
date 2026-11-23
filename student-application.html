@@ -95,10 +95,12 @@
 </div>
 <div class="wrap" id="appWrap"></div>
 
+<script>window.BTC_ZH_DEFAULT = true;</script>
+<script src="lang.js"></script>
 <script src="auth-config.js"></script>
 <script>
   const STEPS = ['welcome','verify','profile','goals','consent','hub'];
-  const STEP_LABELS = ['Welcome','Verify Email','About You','Your Goals','Safety Agreement','Checklist'];
+  const STEP_LABELS = ['欢迎','验证邮箱','关于你','学习目标','安全守则','任务清单'];
   const STATUS_ORDER = ['account_created','email_verified','profile_complete','goals_complete','consent_complete','placement_complete','submitted'];
   const ADMIN_STATUSES = ['under_review','approved','needs_more_info','not_approved','suspended'];
   let stepIndex = 0, session = null, app = {};
@@ -170,7 +172,7 @@
   }
 
   function progressHTML(){
-    return `<div class="progress-label">STEP ${stepIndex + 1} OF ${STEPS.length} · ${STEP_LABELS[stepIndex].toUpperCase()}</div>
+    return `<div class="progress-label">第 ${stepIndex + 1} 步，共 ${STEPS.length} 步 · ${STEP_LABELS[stepIndex]}</div>
       <div class="progress">${STEPS.map((_, i) => `<div class="seg ${i < stepIndex ? 'done' : i === stepIndex ? 'current' : ''}"></div>`).join('')}</div>`;
   }
   function render(){
@@ -179,7 +181,7 @@
     wrap.innerHTML = (step === 'welcome' || step === 'hub') ? body : progressHTML() + body;
     if (['profile','goals'].includes(step)) {
       const lead = wrap.querySelector('.card .lead');
-      const note = '<p class="req-note"><b>*</b> Required — fill in everything marked with a red * to continue. 带红色 * 的为必填项，请全部填写后再继续。</p>';
+      const note = '<p class="req-note"><b>*</b> 带红色 * 的为必填项，请全部填写后再继续。</p>';
       if (lead) lead.insertAdjacentHTML('afterend', note); else wrap.querySelector('.card h1').insertAdjacentHTML('afterend', note);
     }
     wireStep(step);
@@ -193,7 +195,7 @@
       <p class="lead">Welcome! Bridge to China connects you with a volunteer for free, friendly English conversation practice online.<span class="zh">欢迎！Bridge to China 为你匹配志愿者，进行免费、轻松的在线英语会话练习。</span></p>
       <p class="lead" style="margin-bottom:10px;">Here is what happens next · 接下来的步骤：</p>
       <ol class="step-list">
-        <li>Create your account ✓ · 创建账号 ✓</li>
+        <li>创建账号 ✓</li>
         <li>Verify your email · 验证邮箱</li>
         <li>Tell us about yourself · 填写个人资料</li>
         <li>Tell us your English goals and free times · 填写学习目标和可上课时间</li>
@@ -243,7 +245,7 @@
         <div class="help" style="margin:0 0 14px;">Required because you are under 18. We may contact your guardian by email. 因为你未满18岁，此项必填。我们可能会通过邮件联系你的监护人。</div>
         <div class="two-col">
           <div class="field"><label class="req">Name · 姓名</label><input type="text" id="g_name" value="${v('guardian_name')}"></div>
-          <div class="field"><label class="req">Relationship to you · 与你的关系</label><input type="text" id="g_rel" placeholder="e.g. Mother 母亲" value="${v('guardian_relationship')}"></div>
+          <div class="field"><label class="req">Relationship to you · 与你的关系</label><input type="text" id="g_rel" placeholder="例如：母亲" value="${v('guardian_relationship')}"></div>
         </div>
         <div class="two-col">
           <div class="field"><label class="req">Email · 邮箱</label><input type="text" id="g_email" value="${v('guardian_email')}"></div>
@@ -266,7 +268,7 @@
       <div class="field"><label class="req">How would you describe your English? · 你觉得自己的英语水平是？</label>
         ${pills('level',[['Beginner','Beginner 初学者'],['Elementary','Elementary 基础'],['Intermediate','Intermediate 中级'],['Advanced','Advanced 高级']], v('english_self_level'), true)}
         <div class="help">Don't worry — you will take a short test later. · 别担心，之后还有简短的测试。</div></div>
-      <div class="field"><label class="req">How long have you studied English? · 学了多久英语？</label><input type="text" id="f_years" placeholder="e.g. 3 years 3年 — or 0" value="${v('years_studied')}"></div>
+      <div class="field"><label class="req">How long have you studied English? · 学了多久英语？</label><input type="text" id="f_years" placeholder="例如：3年；没学过请填 0" value="${v('years_studied')}"></div>
       <div class="field"><label class="req">What do you want to improve? (choose any) · 你想提高什么？（可多选）</label>
         ${pills('goals',[['Everyday conversation','Everyday conversation 日常对话'],['School exams','School exams 学校考试'],['Travel','Travel 旅行'],['Study abroad','Study abroad 出国留学'],['Work','Work 工作'],['Pronunciation','Pronunciation 发音'],['Confidence','Confidence 增强自信']], v('learning_goals'))}</div>
       <div class="field"><label class="req">Days you can have a lesson · 可以上课的日子</label>
@@ -326,8 +328,8 @@
         <li><span class="dot done">✓</span> Your goals and times · 学习目标和时间</li>
         ${row(consentDone, 'Safety agreement · 安全守则', `<button class="btn btn-primary" style="margin-left:auto;padding:7px 16px;font-size:.8rem;" onclick="stepIndex=4; render();">Start 开始</button>`, false)}
         ${row(placeDone, 'English placement test · 英语分级测试', `<a class="btn btn-primary" style="margin-left:auto;padding:7px 16px;font-size:.8rem;" href="student-placement.html">Start 开始</a>`, !consentDone, 'AFTER AGREEMENT 先完成守则')}
-        <li><span class="dot todo">○</span> <span class="future">Review by our team · 团队审核</span><span class="badge-soon">BY OUR TEAM</span></li>
-        <li><span class="dot todo">○</span> <span class="future">Matched with a volunteer · 匹配志愿者</span><span class="badge-soon">BY OUR TEAM</span></li>
+        <li><span class="dot todo">○</span> <span class="future">Review by our team · 团队审核</span><span class="badge-soon">由我们团队完成</span></li>
+        <li><span class="dot todo">○</span> <span class="future">Matched with a volunteer · 匹配志愿者</span><span class="badge-soon">由我们团队完成</span></li>
       </ul>
       ${msgBox('submitMsg')}
       <div class="actions"><a class="btn btn-ghost" href="student-dashboard.html">My Page · 我的主页</a><button class="btn btn-primary" id="submitAppBtn" ${placeDone && consentDone ? '' : 'disabled'}>Submit · 提交</button></div></div>`;
@@ -364,7 +366,7 @@
 
     if (step === 'verify') {
       document.getElementById('resendBtn').onclick = async () => {
-        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email, options: { emailRedirectTo: pageUrl('confirmed.html') } });
+        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: session.user.email, options: { emailRedirectTo: pageUrl('confirmed.html') + '?lang=zh' } });
         showMsg('verifyMsg', error ? error.message : 'Sent again — check your inbox. 已重新发送，请查收。', error ? 'error' : 'success');
       };
       document.getElementById('verifiedBtn').onclick = async () => {

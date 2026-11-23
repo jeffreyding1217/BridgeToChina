@@ -69,7 +69,7 @@
     <!-- VOLUNTEER PANEL -->
     <div id="authPanel">
       <div class="setup-note" id="setupNote" style="display:none;">
-        <b>Not connected yet:</b> these forms need a free Supabase project before they can create real accounts. Open <code>auth-config.js</code> and follow the instructions inside — it's a 5-minute setup.
+        <b>Not connected yet:</b> these forms need a free Supabase project before they can create real accounts. Open <code data-keep-en>auth-config.js</code> and follow the instructions inside — it's a 5-minute setup.
       </div>
 
       <h1 id="formTitle">Volunteer Log In</h1>
@@ -104,21 +104,42 @@
       <h1 id="ceTitle">Check Your Email</h1>
       <p class="sub" id="ceLead" style="margin-bottom:10px;"></p>
       <p style="font-size:1.05rem;font-weight:700;color:var(--blue-deep);word-break:break-all;margin:0 0 14px;" id="ceEmail"></p>
-      <p class="sub"><b>Open that email and click the link inside</b> to confirm your account. Then come back here and log in.</p>
-      <p class="sub" id="ceZh"></p>
+      <p class="sub"><b>Open that email and click the link inside</b><span> to confirm your account. Then come back here and log in.</span></p>
       <p class="sub" style="font-size:.8rem;">Can't find it? Look in your spam / junk folder. It can take a few minutes, especially for QQ and 163 mailboxes.</p>
       <div class="msg" id="ceMsg"></div>
       <button class="btn" id="ceResend" type="button">Resend verification email</button>
       <button class="btn" id="ceLogin" type="button" style="background:#fff;color:var(--blue);border:1.5px solid var(--line);margin-top:10px;">I've confirmed — take me to log in</button>
     </div>
 
-    <div class="back" style="margin-top:0; padding-top:20px;"><a href="index.html">&larr; Back to the homepage</a></div>
+    <div class="back" style="margin-top:0; padding-top:20px;"><a href="index.html" id="backLink">&larr; Back to the homepage</a></div>
   </div>
 </div>
 
+<script>window.BTC_ZH_DEFAULT = false;</script>
+<script src="lang.js"></script>
+<script>
+  Object.assign(BTC_DICT, {
+    'Volunteer': '志愿者', 'Student': '学生', 'Email': '邮箱', 'Check Your Email': '请查收邮件',
+    '← Back to the homepage': '← 返回首页',
+    'Open that email and click the link inside': '请打开那封邮件，点击里面的链接',
+    'to confirm your account. Then come back here and log in.': '来验证你的账号，然后回到这里登录。',
+    "Can't find it? Look in your spam / junk folder. It can take a few minutes, especially for QQ and 163 mailboxes.": '找不到邮件？请查看垃圾邮件文件夹。QQ 和 163 邮箱有时需要几分钟才能收到。',
+    'Resend verification email': '重新发送验证邮件', "I've confirmed — take me to log in": '我已验证，去登录',
+    "You haven't confirmed your email yet. We sent a verification link to:": '你还没有验证邮箱。我们已向下面的地址发送了验证链接：',
+    'Your account has been created! We sent a verification link to:': '账号已创建！我们已向下面的地址发送了验证链接：',
+    'Sent again — check your inbox (and spam folder).': '已重新发送，请查看收件箱（以及垃圾邮件文件夹）。',
+    'An account with this email already exists. Please use "Log In" instead.': '这个邮箱已经注册过了，请直接登录。',
+    'Too many emails or attempts in a short time. Please wait a few minutes (it can be up to an hour) and try again.': '短时间内操作次数太多，请等几分钟（最长可能一小时）后再试。',
+    'Your password is too short or weak — please use at least 6 characters.': '密码太短或太简单，请至少使用 6 个字符。',
+    'Please enter a valid email address.': '请输入有效的邮箱地址。',
+    'Something went wrong — please try again.': '出了点问题，请重试。',
+    "Supabase isn't connected yet — see the note above and auth-config.js.": '网站暂时无法登录，请联系网站管理员。'
+  });
+</script>
 <script src="auth-config.js"></script>
 <script>
   let role = 'volunteer';
+  let REDIRECT_TO = pageUrl('confirmed.html');
   let mode = 'login';
 
   const COPY = {
@@ -129,10 +150,10 @@
       namePH: 'e.g. Maren Ostrowski', nameLabel: 'Full Name', login: 'Log In', signup: 'Create Account', pw: 'Password',
     },
     student: {
-      loginTitle: 'Student Log In · 学生登录', signupTitle: 'Create a Student Account · 创建学生账号',
-      loginSub: 'Welcome back! Log in to see your lessons. 欢迎回来！请登录查看你的课程。',
-      signupSub: 'It is free. A parent or guardian should help students under 18. 完全免费。未满18岁的学生请在家长或监护人的帮助下注册。',
-      namePH: 'e.g. Li Wei / 李伟', nameLabel: 'Full Name · 姓名', login: 'Log In · 登录', signup: 'Create Account · 创建账号', pw: 'Password · 密码',
+      loginTitle: '学生登录', signupTitle: '创建学生账号',
+      loginSub: '欢迎回来！请登录查看你的课程。',
+      signupSub: '完全免费。未满18岁的学生请在家长或监护人的帮助下注册。',
+      namePH: '例如：李伟', nameLabel: '姓名', login: '登录', signup: '创建账号', pw: '密码',
     },
   };
 
@@ -151,14 +172,18 @@
     document.getElementById('nameInput').placeholder = c.namePH;
     document.getElementById('nameLabel').textContent = c.nameLabel;
     document.querySelector('#passwordInput').previousElementSibling.textContent = c.pw;
-    document.getElementById('modeLogin').textContent = role === 'student' ? 'Log In · 登录' : 'Log In';
-    document.getElementById('modeSignup').textContent = role === 'student' ? 'Create an Account · 注册' : 'Create an Account';
+    document.getElementById('modeLogin').textContent = role === 'student' ? '登录' : 'Log In';
+    document.getElementById('modeSignup').textContent = role === 'student' ? '注册' : 'Create an Account';
   }
 
   function setRole(r){
     role = r;
     document.getElementById('tabVolunteer').classList.toggle('active', r==='volunteer');
     document.getElementById('tabStudent').classList.toggle('active', r==='student');
+    REDIRECT_TO = pageUrl('confirmed.html') + (r === 'student' ? '?lang=zh' : '');
+    if (window.BTC) BTC.setZh(r === 'student');
+    document.getElementById('backLink').href = r === 'student' ? 'zh/index.html' : 'index.html';
+    document.documentElement.lang = r === 'student' ? 'zh-CN' : 'en';
     applyCopy(); hideMsg();
   }
   function setMode(m){
@@ -187,14 +212,13 @@
     return isSignup ? 'application.html' : 'volunteer-dashboard.html';
   }
 
-  const REDIRECT_TO = pageUrl('confirmed.html');
-  let pendingEmail = '';
+    let pendingEmail = '';
 
   function friendlyError(err){
     const m = String((err && err.message) || '').toLowerCase();
     if (m.includes('email not confirmed')) return 'UNCONFIRMED';
     if (m.includes('invalid login credentials')) return role === 'student'
-      ? 'Wrong email or password. If you just registered, confirm your email first. 邮箱或密码错误；如果刚注册，请先验证邮箱。'
+      ? '邮箱或密码不正确。如果你刚注册，请先点击验证邮件中的链接。'
       : 'That email or password is incorrect. If you just signed up, make sure you have confirmed your email first.';
     if (m.includes('already registered') || m.includes('already been registered')) return 'An account with this email already exists. Please use "Log In" instead.';
     if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Too many emails or attempts in a short time. Please wait a few minutes (it can be up to an hour) and try again.';
@@ -212,7 +236,6 @@
     document.getElementById('ceLead').textContent = reason === 'login'
       ? "You haven't confirmed your email yet. We sent a verification link to:"
       : 'Your account has been created! We sent a verification link to:';
-    document.getElementById('ceZh').textContent = role === 'student' ? '请打开邮件并点击其中的链接来验证你的账号，然后回到这里登录。如果没有收到，请检查垃圾邮件。' : '';
   }
   function showCE(text, type){ const el = document.getElementById('ceMsg'); el.textContent = text; el.className = 'msg show ' + type; }
 

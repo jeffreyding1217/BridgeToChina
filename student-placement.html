@@ -52,6 +52,8 @@
 </div>
 <div class="wrap" id="root"></div>
 
+<script>window.BTC_ZH_DEFAULT = true;</script>
+<script src="lang.js"></script>
 <script src="auth-config.js"></script>
 <script>
 /* Items: [category, question, [options], correctIndex]. Ordered easy → hard. */
@@ -89,58 +91,59 @@ const LISTEN = [
 const LEVELS = [[90,'Advanced'],[75,'Intermediate-High'],[60,'Intermediate'],[40,'Intermediate-Low'],[20,'Beginner-High'],[0,'Beginner']];
 const levelFor = p => LEVELS.find(([min]) => p >= min)[1];
 
+const T = (en, zh) => (window.BTC_ZH ? zh : en);
 const root = document.getElementById('root');
 let session, row, answers = {}, listenAns = {}, listenPlays = {}, recorded = false;
 let recorder = null, chunks = [], stream = null;
 const FINAL = ['submitted','under_review','approved','needs_more_info','not_approved','suspended'];
 
 async function init(){
-  if (!isConfigured){ root.innerHTML = '<div class="sec">Supabase isn\'t connected yet.</div>'; return; }
+  if (!isConfigured){ root.innerHTML = '<div class="sec">' + T('The site is not connected yet.','网站暂时无法使用，请联系网站管理员。') + '</div>'; return; }
   const { data:{ session:s } } = await supabaseClient.auth.getSession();
   if (!s){ location.href = 'login.html?role=student'; return; }
   session = s;
   const { data } = await supabaseClient.from('student_applications').select('*').eq('id', s.user.id).single();
   row = data;
-  const stop = (t, m) => { root.innerHTML = '<div class="sec center"><h2></h2><p class="lead"></p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">Back · 返回</a></div>'; root.querySelector('h2').textContent = t; root.querySelector('p').textContent = m; };
-  if (!row){ stop("We couldn't find your registration · 找不到你的注册记录", 'Open your registration page first, then come back. 请先打开注册页面，再回到这里。'); return; }
-  if (!s.user.email_confirmed_at){ stop('Please confirm your email first · 请先验证邮箱', 'Click the link in the email we sent you. 请点击我们发给你的邮件中的链接。'); return; }
-  if (!row.consent_rules){ stop('Please finish the safety agreement first · 请先完成安全守则', 'Go back to your checklist and agree to the rules. 请返回清单并同意规则。'); return; }
-  if (FINAL.includes(row.status)){ stop('Your registration was already submitted · 注册已提交', 'The test is closed now. 测试已关闭。'); return; }
+  const stop = (t, m) => { root.innerHTML = '<div class="sec center"><h2></h2><p class="lead"></p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">' + T('Back','返回') + '</a></div>'; root.querySelector('h2').textContent = t; root.querySelector('p').textContent = m; };
+  if (!row){ stop(T("We couldn't find your registration",'找不到你的注册记录'), T('Open your registration page first, then come back.','请先打开注册页面，再回到这里。')); return; }
+  if (!s.user.email_confirmed_at){ stop(T('Please confirm your email first','请先验证邮箱'), T('Click the link in the email we sent you.','请点击我们发给你的邮件中的链接。')); return; }
+  if (!row.consent_rules){ stop(T('Please finish the safety agreement first','请先完成安全守则'), T('Go back to your checklist and agree to the rules.','请返回清单并同意规则。')); return; }
+  if (FINAL.includes(row.status)){ stop(T('Your registration was already submitted','注册已提交'), T('The test is closed now.','测试已关闭。')); return; }
   if (row.placement_score != null){
-    root.innerHTML = '<div class="sec center"><h2>✓ You already finished the test · 你已完成测试</h2><p class="lead">The test can be taken once. 测试只能做一次。</p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">Back · 返回</a></div>'; return;
+    root.innerHTML = '<div class="sec center"><h2>' + T('✓ You already finished the test','✓ 你已完成测试') + '</h2><p class="lead">' + T('The test can be taken once.','测试只能做一次。') + '</p><a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block">' + T('Back','返回') + '</a></div>'; return;
   }
   render();
 }
 
 function render(){
-  let html = `<h1>English Placement Test <span style="display:block;font-size:.6em;font-weight:500;">英语分级测试</span></h1>
-  <p class="lead">This test helps us find the right level for you. It starts easy and gets harder — <b>it is okay if some questions are too hard!</b> Just do your best, and please do it by yourself without a translator or AI.<br>
-  这个测试帮助我们为你找到合适的级别。题目由易到难，<b>有些题做不出来也没关系！</b>请尽力完成，并独立作答，不要使用翻译软件或AI。</p>
-  <p class="lead" style="margin-top:8px;">You can take it <b>once</b>. Don't close the page before you press Submit. 测试只能做<b>一次</b>，提交前请不要关闭页面。</p>`;
+  let html = `<h1>${T('English Placement Test','英语分级测试')}</h1>
+  <p class="lead">${T('This test helps us find the right level for you. It starts easy and gets harder — <b>it is okay if some questions are too hard!</b> Just do your best, and please do it by yourself without a translator or AI.','这个测试帮助我们为你找到合适的级别。题目由易到难，<b>有些题做不出来也没关系！</b>请尽力完成，并独立作答，不要使用翻译软件或 AI。')}</p>
+  <p class="lead" style="margin-top:8px;">${T("You can take it <b>once</b>. Don't close the page before you press Submit.",'测试只能做<b>一次</b>，提交前请不要关闭页面。')}</p>
+  <p class="lead" style="margin-top:8px;">${T('','注意：测试题目和你的作答用的是英语，这是正常的，因为这是英语水平测试。')}</p>`;
 
-  html += '<div class="sec"><span class="tag">PART 1 · 第一部分</span><h2>Grammar · 语法</h2>';
+  html += `<div class="sec"><span class="tag">${T('PART 1','第一部分')}</span><h2>${T('Grammar','语法')}</h2>`;
   MC.forEach((q,i)=>{
-    if (q[0]==='reading' && MC[i-1][0]==='grammar') html += '</div><div class="sec"><span class="tag">PART 2 · 第二部分</span><h2>Reading · 阅读</h2><div class="passage">'+PASSAGE+'</div>';
+    if (q[0]==='reading' && MC[i-1][0]==='grammar') html += '</div><div class="sec"><span class="tag">' + T('PART 2','第二部分') + '</span><h2>' + T('Reading','阅读') + '</h2><div class="passage">'+PASSAGE+'</div>';
     html += `<div class="q"><div class="stem">${i+1}. ${q[1]}</div>${q[2].map((o,j)=>`<label class="opt" data-q="${i}" data-o="${j}">${String.fromCharCode(65+j)}. ${o}</label>`).join('')}</div>`;
   });
   html += '</div>';
 
-  html += `<div class="sec"><span class="tag">PART 3 · 第三部分</span><h2>Listening · 听力</h2>
-    <p class="lead">Press Play to hear a sentence, then answer. You can play each one 2 times. 点击播放收听句子，然后回答。每段可以播放2次。</p>
-    <div id="ttsWarn" class="note" style="display:none;">Your browser can't play spoken audio. Please use Chrome, Edge or Safari on a computer. 你的浏览器无法播放语音，请在电脑上使用 Chrome、Edge 或 Safari。</div>
-    ${LISTEN.map((q,i)=>`<div class="q"><div class="stem">Audio ${i+1}: <button class="btn ghost play" data-i="${i}" style="padding:6px 14px;margin-left:6px;">▶ Play 播放</button> <span class="rec-state" id="plays${i}">2 plays left</span></div>
+  html += `<div class="sec"><span class="tag">${T('PART 3','第三部分')}</span><h2>${T('Listening','听力')}</h2>
+    <p class="lead">${T('Press Play to hear a sentence, then answer. You can play each one 2 times.','点击“播放”收听英语句子，然后回答问题。每段可以播放 2 次。')}</p>
+    <div id="ttsWarn" class="note" style="display:none;">${T("Your browser can't play spoken audio. Please use Chrome, Edge or Safari on a computer.",'你的浏览器无法播放语音，请在电脑上使用 Chrome、Edge 或 Safari。')}</div>
+    ${LISTEN.map((q,i)=>`<div class="q"><div class="stem">${T('Audio '+(i+1)+':','音频 '+(i+1)+'：')} <button class="btn ghost play" data-i="${i}" style="padding:6px 14px;margin-left:6px;">▶ ${T('Play','播放')}</button> <span class="rec-state" id="plays${i}">${T('2 plays left','还可播放 2 次')}</span></div>
       <div class="stem" style="margin-top:12px;">${q[1]}</div>${q[2].map((o,j)=>`<label class="opt" data-l="${i}" data-o="${j}">${String.fromCharCode(65+j)}. ${o}</label>`).join('')}</div>`).join('')}</div>`;
 
-  html += `<div class="sec"><span class="tag">PART 4 · 第四部分</span><h2>Writing · 写作 <span style="color:#d93025">*</span></h2>
-    <p class="lead">Write <b>at least 3 sentences</b> (3 to 5 is perfect) in English about yourself: your name, where you live, and what you like to do. Write only what you can — it's okay to make mistakes.<br>用英语写3到5句话介绍你自己：你的名字、住在哪里、喜欢做什么。写你会写的就好，有错误也没关系。</p>
-    <textarea id="essay" style="min-height:130px;" placeholder="Hello, my name is…"></textarea><div class="counter" id="essayCount">0 words</div></div>`;
+  html += `<div class="sec"><span class="tag">${T('PART 4','第四部分')}</span><h2>${T('Writing','写作')} <span style="color:#d93025">*</span></h2>
+    <p class="lead">${T("Write <b>at least 3 sentences</b> (3 to 5 is perfect) in English about yourself: your name, where you live, and what you like to do. Write only what you can — it's okay to make mistakes.",'请用<b>英语</b>写<b>至少 3 句话</b>（3 到 5 句最合适）介绍你自己：你的名字、住在哪里、喜欢做什么。写你会写的就好，有错误也没关系。')}</p>
+    <textarea id="essay" style="min-height:130px;" placeholder="Hello, my name is…" data-keep-en></textarea><div class="counter" id="essayCount">${T('0 words','0 个单词')}</div></div>`;
 
-  html += `<div class="sec"><span class="tag">PART 5 · 第五部分 (optional 选做)</span><h2>Speaking · 口语</h2>
-    <p class="lead">Record yourself saying a few sentences: "Please introduce yourself." Speak for about 30 seconds. You can skip this if you can't record. 请录下你的自我介绍，大约30秒。如果无法录音可以跳过。</p>
-    <div id="micWarn" class="note" style="display:none;">Recording isn't available in this browser. 当前浏览器不支持录音。</div>
-    <div class="rec-row"><button class="btn green" id="recBtn">● Record 开始录音</button> <button class="btn red" id="stopBtn" style="display:none;">■ Stop 停止</button><span class="rec-state" id="recstate">Not recorded 尚未录音</span></div></div>`;
+  html += `<div class="sec"><span class="tag">${T('PART 5 (optional)','第五部分（选做）')}</span><h2>${T('Speaking','口语')}</h2>
+    <p class="lead">${T('Record yourself saying a few sentences: "Please introduce yourself." Speak for about 30 seconds. You can skip this if you can\'t record.','请用英语录下你的自我介绍（“Please introduce yourself.”），大约 30 秒。如果无法录音，可以跳过。')}</p>
+    <div id="micWarn" class="note" style="display:none;">${T("Recording isn't available in this browser.",'当前浏览器不支持录音。')}</div>
+    <div class="rec-row"><button class="btn green" id="recBtn">● ${T('Record','开始录音')}</button> <button class="btn red" id="stopBtn" style="display:none;">■ ${T('Stop','停止')}</button><span class="rec-state" id="recstate">${T('Not recorded','尚未录音')}</span></div></div>`;
 
-  html += '<div class="err" id="err"></div><div style="text-align:right;margin-top:24px;"><button class="btn" id="submitBtn" style="padding:14px 34px;">Submit · 提交</button></div>';
+  html += '<div class="err" id="err"></div><div style="text-align:right;margin-top:24px;"><button class="btn" id="submitBtn" style="padding:14px 34px;">' + T('Submit','提交') + '</button></div>';
   root.innerHTML = html;
   if (!('speechSynthesis' in window)) document.getElementById('ttsWarn').style.display = 'block';
   if (!navigator.mediaDevices || !window.MediaRecorder) document.getElementById('micWarn').style.display = 'block';
@@ -154,7 +157,7 @@ function wire(){
     const i = +b.dataset.i; listenPlays[i] = listenPlays[i] || 0;
     if (listenPlays[i] >= 2 || !('speechSynthesis' in window)) return;
     listenPlays[i]++;
-    document.getElementById('plays'+i).textContent = (2-listenPlays[i]) + ' play' + (2-listenPlays[i]===1?'':'s') + ' left';
+    document.getElementById('plays'+i).textContent = T((2-listenPlays[i]) + ' play' + (2-listenPlays[i]===1?'':'s') + ' left', '还可播放 ' + (2-listenPlays[i]) + ' 次');
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(LISTEN[i][0]); u.lang = 'en-US'; u.rate = 0.9;
     const v = speechSynthesis.getVoices().filter(x => x.lang.toLowerCase().startsWith('en'));
@@ -163,7 +166,7 @@ function wire(){
     if (listenPlays[i] >= 2) b.disabled = true;
   });
   const essay = document.getElementById('essay');
-  essay.oninput = () => { const t = essay.value.trim(); document.getElementById('essayCount').textContent = (t ? t.split(/\s+/).length : 0) + ' words'; };
+  essay.oninput = () => { const t = essay.value.trim(); const wc = t ? t.split(/\s+/).length : 0; document.getElementById('essayCount').textContent = T(wc + ' words', wc + ' 个单词'); };
   document.getElementById('recBtn').onclick = startRec;
   document.getElementById('stopBtn').onclick = () => { if (recorder && recorder.state !== 'inactive') recorder.stop(); };
   document.getElementById('submitBtn').onclick = submit;
@@ -172,41 +175,41 @@ function setState(t, ok){ const el = document.getElementById('recstate'); el.tex
 async function startRec(){
   if (recorder) return;
   try { stream = await navigator.mediaDevices.getUserMedia({ audio:true }); }
-  catch(e){ setState('Microphone blocked. Please allow it and try again. 麦克风被禁用，请允许后重试。'); return; }
+  catch(e){ setState(T('Microphone blocked. Please allow it and try again.','麦克风被禁用，请允许后重试。')); return; }
   chunks = []; recorder = new MediaRecorder(stream);
   recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
   recorder.onstop = uploadRec; recorder.start();
   document.getElementById('recBtn').style.display = 'none'; document.getElementById('stopBtn').style.display = 'inline-block';
-  setState('Recording… 录音中…');
+  setState(T('Recording…','录音中…'));
 }
 async function uploadRec(){
   const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
   stream.getTracks().forEach(t=>t.stop()); recorder = null;
-  document.getElementById('recBtn').style.display = 'inline-block'; document.getElementById('recBtn').textContent = '● Re-record 重新录音';
+  document.getElementById('recBtn').style.display = 'inline-block'; document.getElementById('recBtn').textContent = '● ' + T('Re-record','重新录音');
   document.getElementById('stopBtn').style.display = 'none';
-  if (blob.size < 2000){ setState('Empty recording — try again. 录音为空，请重试。'); return; }
-  setState('Uploading… 上传中…');
+  if (blob.size < 2000){ setState(T('Empty recording — try again.','录音为空，请重试。')); return; }
+  setState(T('Uploading…','上传中…'));
   const ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
   const path = `${session.user.id}/placement-${Date.now()}.${ext}`;
   const { error } = await supabaseClient.storage.from('recordings').upload(path, blob, { contentType: blob.type });
-  if (error){ setState('Upload failed: ' + error.message); return; }
+  if (error){ setState(T('Upload failed: ' + error.message,'上传失败，请重试。')); return; }
   await supabaseClient.from('student_recordings').delete().eq('student_id', session.user.id);
   const { error: e2 } = await supabaseClient.from('student_recordings').insert({ student_id: session.user.id, prompt_index: 0, storage_path: path });
-  if (e2){ setState('Could not save: ' + e2.message); return; }
-  recorded = true; setState('✓ Uploaded 已上传', true);
+  if (e2){ setState(T('Could not save: ' + e2.message,'无法保存，请重试。')); return; }
+  recorded = true; setState(T('✓ Uploaded','✓ 已上传'), true);
 }
 function showErr(t){ const e = document.getElementById('err'); e.textContent = t; e.style.display = 'block'; e.scrollIntoView({behavior:'smooth', block:'center'}); }
 
 async function submit(){
   document.getElementById('err').style.display = 'none';
-  if (recorder){ showErr('Please stop your recording first. 请先停止录音。'); return; }
+  if (recorder){ showErr(T('Please stop your recording first.','请先停止录音。')); return; }
   const left = MC.filter((_,i)=>answers[i]===undefined).length + LISTEN.filter((_,i)=>listenAns[i]===undefined).length;
-  if (left){ showErr(`Please answer every question — ${left} left. If you're not sure, guess! 请回答所有题目，还剩 ${left} 题。不确定可以猜一个！`); return; }
+  if (left){ showErr(T(`Please answer every question — ${left} left. If you're not sure, guess!`,`请回答所有题目，还剩 ${left} 题。不确定可以猜一个！`)); return; }
   const essay = document.getElementById('essay').value.trim();
   const words = essay ? essay.split(/\s+/).length : 0;
   const sentences = essay.split(/[.!?。！？…]+/).map(x=>x.trim()).filter(x=>x.replace(/\s/g,'').length>=6).length;
-  if (sentences < 3){ showErr('Please write at least 3 full sentences (you wrote ' + sentences + '). 请至少写3句完整的话（目前 ' + sentences + ' 句）。'); return; }
-  if (!confirm('Submit the test? You can only take it once. 确定提交吗？测试只能做一次。')) return;
+  if (sentences < 3){ showErr(T('Please write at least 3 full sentences (you wrote ' + sentences + ').','请至少用英语写 3 句完整的话（目前 ' + sentences + ' 句）。')); return; }
+  if (!confirm(T('Submit the test? You can only take it once.','确定提交吗？测试只能做一次。'))) return;
 
   const t = { grammar:[0,0], reading:[0,0] };
   MC.forEach((q,i)=>{ t[q[0]][1]++; if (answers[i]===q[3]) t[q[0]][0]++; });
@@ -220,10 +223,10 @@ async function submit(){
   const upd = { placement_score: score, placement_breakdown: breakdown, placement_answers: { mc: answers, listening: listenAns },
     placement_writing: essay, suggested_level: levelFor(score), status: 'placement_complete' };
   const { error } = await supabaseClient.from('student_applications').update(upd).eq('id', session.user.id);
-  if (error){ btn.disabled = false; showErr('Could not save: ' + error.message); return; }
-  root.innerHTML = `<div class="sec center"><h2>✓ Test finished · 测试完成</h2>
-    <p class="lead">Thank you! Our team will read your writing and use your results to choose the best volunteer for you. Your level will be confirmed in your first lesson.<br>谢谢！我们的团队会阅读你的作文，并根据结果为你选择最合适的志愿者。你的级别会在第一节课中确认。</p>
-    <a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block;margin-top:10px;">Continue · 继续</a></div>`;
+  if (error){ btn.disabled = false; showErr(T('Could not save: ' + error.message,'无法保存，请重试：' + error.message)); return; }
+  root.innerHTML = `<div class="sec center"><h2>${T('✓ Test finished','✓ 测试完成')}</h2>
+    <p class="lead">${T('Thank you! Our team will read your writing and use your results to choose the best volunteer for you. Your level will be confirmed in your first lesson.','谢谢！我们的团队会阅读你的作文，并根据结果为你选择最合适的志愿者。你的级别会在第一节课中确认。')}</p>
+    <a class="btn" href="student-application.html" style="text-decoration:none;display:inline-block;margin-top:10px;">${T('Continue','继续')}</a></div>`;
 }
 init();
 </script>

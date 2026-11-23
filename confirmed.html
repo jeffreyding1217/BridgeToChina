@@ -23,11 +23,13 @@
 <body>
 <div class="card">
   <div class="logo"><span class="mark">BC</span> Bridge to China</div>
-  <div id="out"><p>One moment… · 请稍候…</p></div>
+  <div id="out"><p>One moment…</p></div>
 </div>
+<script src="lang.js"></script>
 <script src="auth-config.js"></script>
 <script>
   const out = document.getElementById('out');
+  const T = (en, zh) => (window.BTC_ZH ? zh : en);
   function show(icon, title, body, btnHref, btnText, ghost){
     out.innerHTML = '<div class="big">'+icon+'</div><h1>'+title+'</h1>'+body+(btnHref ? '<a class="btn '+(ghost?'ghost':'')+'" href="'+btnHref+'">'+btnText+'</a>' : '');
   }
@@ -36,20 +38,20 @@
     const qs = new URLSearchParams(location.search);
     const errDesc = hash.get('error_description') || qs.get('error_description');
     if (errDesc) {
-      show('⚠️', 'This link has expired or was already used · 链接已过期或已使用',
-        '<p>Don\'t worry — if you already confirmed once, just log in. If not, log in and we\'ll offer to send you a new confirmation email.</p><p>别担心——如果你之前已经验证过，直接登录即可。如果还没有，请登录，我们会提供重新发送验证邮件的选项。</p>',
-        'login.html', 'Go to Log In · 去登录');
+      show('⚠️', T('This link has expired or was already used','链接已过期或已使用'),
+        '<p>' + T("Don't worry — if you already confirmed once, just log in. If not, log in and we'll offer to send you a new confirmation email.",'别担心——如果你之前已经验证过，直接登录即可。如果还没有，请登录，我们会提供重新发送验证邮件的选项。') + '</p>',
+        'login.html' + (window.BTC_ZH ? '?role=student&lang=zh' : ''), T('Go to Log In','去登录'));
       return;
     }
     if (!isConfigured || !supabaseClient) {
-      show('⚙️', 'Almost there', '<p>The site is not connected to its database yet.</p>', 'index.html', 'Home', true); return;
+      show('⚙️', T('Almost there','马上就好'), '<p>' + T('The site is not connected to its database yet.','网站暂时无法使用，请联系网站管理员。') + '</p>', window.BTC_ZH ? 'zh/index.html' : 'index.html', T('Home','首页'), true); return;
     }
     // supabase-js reads the confirmation tokens from the link automatically and signs the person in.
     const { data: { session } } = await supabaseClient.auth.getSession();
-    history.replaceState(null, '', location.pathname); // tidy the address bar
+    history.replaceState(null, '', location.pathname + (window.BTC_ZH ? '?lang=zh' : '')); // tidy the address bar
     if (!session) {
-      show('✅', 'Your email is confirmed · 邮箱已验证',
-        '<p>Please log in to continue.</p><p>请登录后继续。</p>', 'login.html', 'Log In · 登录');
+      show('✅', T('Your email is confirmed','邮箱已验证'),
+        '<p>' + T('Please log in to continue.','请登录后继续。') + '</p>', 'login.html' + (window.BTC_ZH ? '?role=student&lang=zh' : ''), T('Log In','登录'));
       return;
     }
     let dest = 'application.html';
@@ -58,9 +60,10 @@
       if (prof && prof.role === 'student') dest = 'student-application.html';
     } catch(e) {}
     const student = dest.startsWith('student');
-    show('✅', 'Email confirmed! · 邮箱验证成功！',
-      '<p>Thank you — your email is verified and you are logged in. '+(student ? 'Next, finish your student registration.' : 'Next, continue your volunteer application.')+'</p><p>谢谢！你的邮箱已验证，并已登录。'+(student ? '下一步请完成学生注册。' : '下一步请继续完成志愿者申请。')+'</p>',
-      dest, student ? 'Continue registration · 继续注册' : 'Continue application');
+    if (window.BTC) BTC.setZh(student);
+    show('✅', T('Email confirmed!','邮箱验证成功！'),
+      '<p>' + (student ? '谢谢！你的邮箱已验证，并已登录。下一步请完成学生注册。' : 'Thank you — your email is verified and you are logged in. Next, continue your volunteer application.') + '</p>',
+      dest, student ? '继续注册' : 'Continue application');
   }
   run();
 </script>

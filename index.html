@@ -1,82 +1,124 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bridge to China — 免费英语口语练习</title>
-<meta name="description" content="为中国学生提供免费的一对一英语口语练习，志愿者通过腾讯会议（VooV Meeting）为你上课。">
-<link rel="stylesheet" href="../site.css">
-<style>body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;} h1,h2,h3,h4{letter-spacing:0;} em{font-style:normal;}</style>
+<title>Bridge to China — Free English conversation practice</title>
+<meta name="description" content="Free one-on-one English conversation practice for students in China, with volunteers over VooV Meeting.">
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 <header class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo"><span class="logo-mark">BC</span> Bridge to China</a>
-    <nav class="links"><a href="index.html" class="active">首页</a><a href="about.html">关于我们</a><a href="how-it-works.html">参加流程</a><a href="students.html">学生须知</a><a href="curriculum.html">课程内容</a><a href="faq.html">常见问题</a><a href="contact.html">联系我们</a></nav>
+    <nav class="links"><a href="index.html" class="active">Home</a><a href="about.html">About</a><a href="how-it-works.html">How It Works</a><a href="volunteers.html">Volunteers</a><a href="students.html">Students</a><a href="curriculum.html">Curriculum</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a></nav>
     <div class="nav-ctas">
-      <a href="../index.html" class="btn btn-ghost btn-sm" lang="en">English</a>
-      <a href="../login.html?role=student&amp;lang=zh" class="btn btn-ghost btn-sm">登录</a>
-      <a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-primary btn-sm">学生注册</a>
+      <a href="zh/index.html" class="btn btn-ghost btn-sm" lang="zh-CN">中文</a>
+      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
+      <a href="login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>
     </div>
-    <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span><span></span></button>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
-  <nav class="mobile-links" id="mobileLinks"><a href="index.html" class="active">首页</a><a href="about.html">关于我们</a><a href="how-it-works.html">参加流程</a><a href="students.html">学生须知</a><a href="curriculum.html">课程内容</a><a href="faq.html">常见问题</a><a href="contact.html">联系我们</a>
-    <a href="../index.html" lang="en">English</a>
-    <a href="../login.html?role=student&amp;lang=zh">登录</a>
-    <a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-primary btn-sm" style="margin-top:6px;">学生注册</a>
+  <nav class="mobile-links" id="mobileLinks"><a href="index.html" class="active">Home</a><a href="about.html">About</a><a href="how-it-works.html">How It Works</a><a href="volunteers.html">Volunteers</a><a href="students.html">Students</a><a href="curriculum.html">Curriculum</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a>
+    <a href="zh/index.html" lang="zh-CN">中文</a>
+    <a href="login.html">Log In</a>
+    <a href="login.html?mode=signup" class="btn btn-primary btn-sm" style="margin-top:6px;">Sign Up</a>
   </nav>
 </header>
 
-<section class="hero"><div class="wrap hero-grid">
-  <div class="hero-copy">
-    <span class="eyebrow">免费英语口语项目</span>
-    <h1>让说英语的志愿者与<em>中国学生</em>面对面交流。</h1>
-    <p class="sub">志愿者通过腾讯会议（VooV Meeting）为你提供免费的一对一英语口语课。你来练习开口说，志愿者分享他们的语言。</p>
-    <div class="hero-ctas"><a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-primary">学生注册</a><a href="../login.html?role=student&amp;lang=zh" class="btn btn-secondary">登录</a></div>
-    <div class="hero-stats">
-      <div class="stat"><b>免费</b><span>学生无需付费</span></div>
-      <div class="stat"><b>30 分钟</b><span>每节课时长</span></div>
-      <div class="stat"><b>一对一</b><span>一位学生，一位志愿者</span></div>
+<section class="hero" id="home">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">A free English tutoring program</span>
+      <h1>Connecting English speakers with <em>students in China.</em></h1>
+      <p class="sub">Free one-on-one English conversation lessons with volunteers, over VooV Meeting. Students practice speaking. Volunteers share their language and earn approved service hours.</p>
+      <div class="hero-ctas">
+        <a href="login.html?mode=signup" class="btn btn-primary">Become a Volunteer</a>
+        <a href="login.html?role=student&amp;mode=signup" class="btn btn-secondary">Register as a Student</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>Free</b><span>For students</span></div>
+        <div class="stat"><b>30 min</b><span>Lessons</span></div>
+        <div class="stat"><b>1-on-1</b><span>One student, one volunteer</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="timeline">
+        <h4>Every lesson: 30 minutes, same structure</h4>
+        <div class="tl-row"><div class="tl-time">0–5 min</div><div><b>Conversation warm-up</b><span>Simple questions about their day, hobbies and family.</span></div></div><div class="tl-row"><div class="tl-time">5–10 min</div><div><b>Vocabulary</b><span>Learn new words and use them in sentences.</span></div></div><div class="tl-row"><div class="tl-time">10–15 min</div><div><b>Grammar & sentence structure</b><span>One idea, with examples and practice.</span></div></div><div class="tl-row"><div class="tl-time">15–23 min</div><div><b>Speaking practice</b><span>A real-life roleplay, such as ordering food or asking for directions.</span></div></div><div class="tl-row"><div class="tl-time">23–27 min</div><div><b>Interactive game</b><span>A short game that uses today’s language.</span></div></div><div class="tl-row"><div class="tl-time">27–30 min</div><div><b>Review & wrap-up</b><span>What did we learn? A small homework task.</span></div></div>
+      </div>
     </div>
   </div>
-  <div class="hero-visual"><div class="timeline"><h4>每节课 30 分钟，流程固定</h4><div class="tl-row"><div class="tl-time">0–5 分钟</div><div><b>聊天热身</b><span>围绕你的一天、爱好和家人，用简单的问题聊一聊。</span></div></div><div class="tl-row"><div class="tl-time">5–10 分钟</div><div><b>词汇学习</b><span>学习新单词，并用它们造句。</span></div></div><div class="tl-row"><div class="tl-time">10–15 分钟</div><div><b>语法与句型</b><span>每次只学一个知识点，配有例句和练习。</span></div></div><div class="tl-row"><div class="tl-time">15–23 分钟</div><div><b>口语练习</b><span>模拟真实场景，例如点餐或问路。</span></div></div><div class="tl-row"><div class="tl-time">23–27 分钟</div><div><b>互动游戏</b><span>用今天学的内容玩一个小游戏。</span></div></div><div class="tl-row"><div class="tl-time">27–30 分钟</div><div><b>回顾与总结</b><span>今天学了什么？再布置一个小作业。</span></div></div></div></div>
-</div></section>
-<section class="section tint"><div class="wrap">
-  <div class="section-head center" style="max-width:640px;margin-left:auto;margin-right:auto;text-align:center;"><span class="eyebrow">了解更多</span><h2>找到你需要的内容</h2><p>项目的每个部分都有单独的页面。</p></div>
-  <div class="link-cards">
-    <a class="link-card" href="about.html"><h3>关于我们</h3><p>Bridge to China 为什么而生，我们看重什么，以及我们如何保护学生的安全。</p><span class="go">查看详情 →</span></a>
-    <a class="link-card" href="how-it-works.html"><h3>参加流程</h3><p>从注册到第一节课，每一步怎么走。</p><span class="go">查看步骤 →</span></a>
-    <a class="link-card" href="students.html"><h3>学生须知</h3><p>上课前要了解什么、谁可以参加、怎样开始。</p><span class="go">了解详情 →</span></a>
-    <a class="link-card" href="curriculum.html"><h3>课程内容</h3><p>从初级到高级，共 60 个课堂主题。</p><span class="go">浏览主题 →</span></a>
-    <a class="link-card" href="faq.html"><h3>常见问题</h3><p>关于费用、年龄、设备、安全等问题的解答。</p><span class="go">查看解答 →</span></a>
-    <a class="link-card" href="contact.html"><h3>联系我们</h3><p>有疑问或安全方面的顾虑，请与我们联系。</p><span class="go">联系我们 →</span></a>
-  </div></div></section>
-<section class="section"><div class="wrap" style="max-width:760px;">
-  <span class="eyebrow">项目现状</span>
-  <h2 style="margin-top:12px;font-size:1.9rem;">我们是一个刚起步的项目。</h2>
-  <p style="margin-top:14px;color:var(--ink-soft);font-size:1.02rem;">Bridge to China 才刚刚开始。每一位志愿者和每一位学生，我们都会先人工审核，然后再进行匹配，所以目前规模很小。在有真实的数据和反馈之前，我们不会公布任何数字或评价。</p>
-</div></section>
-<section class="section"><div class="wrap"><div class="cta-band"><h2>准备好了吗？</h2><p>创建一个免费账号即可开始，我们的团队会审核每一份申请。</p>
-  <div class="hero-ctas"><a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-secondary">学生注册</a></div></div></div></section>
+</section>
+
+<section class="section tint">
+  <div class="wrap">
+    <div class="section-head center" style="max-width:640px;margin-left:auto;margin-right:auto;text-align:center;">
+      <span class="eyebrow">Explore</span>
+      <h2>Find what you need.</h2>
+      <p>Each part of the program has its own page.</p>
+    </div>
+    <div class="link-cards">
+      <a class="link-card" href="about.html"><h3>About us</h3><p>Why Bridge to China exists, what we value, and how we keep students safe.</p><span class="go">Read more →</span></a>
+      <a class="link-card" href="how-it-works.html"><h3>How it works</h3><p>The steps for students and for volunteers, from sign-up to your first lesson.</p><span class="go">See the steps →</span></a>
+      <a class="link-card" href="volunteers.html"><h3>For volunteers</h3><p>Who can volunteer, what you will do, and how hours and certificates work.</p><span class="go">Volunteer →</span></a>
+      <a class="link-card" href="students.html"><h3>For students</h3><p>What to expect, who can join, and how to get started.</p><span class="go">Join as a student →</span></a>
+      <a class="link-card" href="curriculum.html"><h3>Curriculum</h3><p>60 lesson topics from beginner to advanced, all in one place.</p><span class="go">Browse topics →</span></a>
+      <a class="link-card" href="faq.html"><h3>FAQ</h3><p>Answers about cost, age, technology, safety and volunteer hours.</p><span class="go">Get answers →</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <span class="eyebrow">Where we are</span>
+    <h2 style="margin-top:12px;font-size:1.9rem;">We are a new program.</h2>
+    <p style="margin-top:14px;color:var(--ink-soft);font-size:1.02rem;">Bridge to China is just getting started. We review every volunteer and every student by hand before matching them, so we are starting small. We do not publish numbers or testimonials until we have real ones.</p>
+  </div>
+</section>
+<section class="section"><div class="wrap"><div class="cta-band">
+  <h2>Ready to start?</h2><p>Create a free account. Our team reviews every application.</p>
+  <div class="hero-ctas">
+    <a href="login.html?mode=signup" class="btn btn-secondary">Become a Volunteer</a>
+    <a href="login.html?role=student&amp;mode=signup" class="btn btn-ghost">Register as a Student</a>
+  </div>
+</div></div></section>
 <footer>
   <div class="wrap">
     <div class="footer-grid">
       <div>
         <div class="footer-logo"><span class="logo-mark">BC</span> Bridge to China</div>
-        <p class="mission-text">为中国学生提供免费的一对一英语口语练习，授课志愿者均经过我们团队的审核。</p>
+        <p class="mission-text">Free one-on-one English conversation practice for students in China, taught by volunteers who have been reviewed by our team.</p>
       </div>
-      <div><h5>了解更多</h5><ul>
-        <li><a href="about.html">关于我们</a></li><li><a href="how-it-works.html">参加流程</a></li>
-        <li><a href="curriculum.html">课程内容</a></li><li><a href="faq.html">常见问题</a></li></ul></div>
-      <div><h5>学生专区</h5><ul>
-        <li><a href="students.html">学生须知</a></li><li><a href="contact.html">联系我们</a></li></ul></div>
-      <div><h5>账号</h5><ul>
-        <li><a href="../login.html?role=student&amp;lang=zh">登录</a></li><li><a href="../login.html?role=student&amp;mode=signup&amp;lang=zh">学生注册</a></li>
-        <li><a href="../index.html" lang="en">English version</a></li></ul></div>
+      <div>
+        <h5>Learn more</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="how-it-works.html">How It Works</a></li>
+          <li><a href="curriculum.html">Curriculum</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Get involved</h5>
+        <ul>
+          <li><a href="volunteers.html">Volunteers</a></li>
+          <li><a href="students.html">Students</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Account</h5>
+        <ul>
+          <li><a href="login.html">Log In</a></li>
+          <li><a href="login.html?mode=signup">Volunteer Sign Up</a></li>
+          <li><a href="login.html?role=student&amp;mode=signup">Student Sign Up</a></li>
+        </ul>
+      </div>
     </div>
     <div class="footer-bottom"><span>© 2026 Bridge to China</span></div>
   </div>
 </footer>
-<script src="../site.js"></script>
+<script src="site.js"></script>
 </body>
 </html>

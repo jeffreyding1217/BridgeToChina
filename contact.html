@@ -1,50 +1,56 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>联系我们 — Bridge to China</title>
-<meta name="description" content="如何联系 Bridge to China 团队。">
-<link rel="stylesheet" href="../site.css">
-<style>body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;} h1,h2,h3,h4{letter-spacing:0;} em{font-style:normal;}</style>
+<title>Contact — Bridge to China</title>
+<meta name="description" content="How to reach the Bridge to China team.">
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 <header class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo"><span class="logo-mark">BC</span> Bridge to China</a>
-    <nav class="links"><a href="index.html">首页</a><a href="about.html">关于我们</a><a href="how-it-works.html">参加流程</a><a href="students.html">学生须知</a><a href="curriculum.html">课程内容</a><a href="faq.html">常见问题</a><a href="contact.html" class="active">联系我们</a></nav>
+    <nav class="links"><a href="index.html">Home</a><a href="about.html">About</a><a href="how-it-works.html">How It Works</a><a href="volunteers.html">Volunteers</a><a href="students.html">Students</a><a href="curriculum.html">Curriculum</a><a href="faq.html">FAQ</a><a href="contact.html" class="active">Contact</a></nav>
     <div class="nav-ctas">
-      <a href="../index.html" class="btn btn-ghost btn-sm" lang="en">English</a>
-      <a href="../login.html?role=student&amp;lang=zh" class="btn btn-ghost btn-sm">登录</a>
-      <a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-primary btn-sm">学生注册</a>
+      <a href="zh/index.html" class="btn btn-ghost btn-sm" lang="zh-CN">中文</a>
+      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
+      <a href="login.html?mode=signup" class="btn btn-primary btn-sm">Sign Up</a>
     </div>
-    <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span><span></span></button>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
-  <nav class="mobile-links" id="mobileLinks"><a href="index.html">首页</a><a href="about.html">关于我们</a><a href="how-it-works.html">参加流程</a><a href="students.html">学生须知</a><a href="curriculum.html">课程内容</a><a href="faq.html">常见问题</a><a href="contact.html" class="active">联系我们</a>
-    <a href="../index.html" lang="en">English</a>
-    <a href="../login.html?role=student&amp;lang=zh">登录</a>
-    <a href="../login.html?role=student&amp;mode=signup&amp;lang=zh" class="btn btn-primary btn-sm" style="margin-top:6px;">学生注册</a>
+  <nav class="mobile-links" id="mobileLinks"><a href="index.html">Home</a><a href="about.html">About</a><a href="how-it-works.html">How It Works</a><a href="volunteers.html">Volunteers</a><a href="students.html">Students</a><a href="curriculum.html">Curriculum</a><a href="faq.html">FAQ</a><a href="contact.html" class="active">Contact</a>
+    <a href="zh/index.html" lang="zh-CN">中文</a>
+    <a href="login.html">Log In</a>
+    <a href="login.html?mode=signup" class="btn btn-primary btn-sm" style="margin-top:6px;">Sign Up</a>
   </nav>
 </header>
-<section class="page-head"><div class="wrap"><span class="eyebrow">联系我们</span><h1>有疑问或顾虑？</h1><p>我们是一个小团队，回复可能需要一点时间，请耐心等待。</p></div></section>
+<section class="page-head"><div class="wrap">
+  <span class="eyebrow">Contact</span>
+  <h1>Questions or concerns?</h1>
+  <p>We are a small team. Please be patient if we take a little while to reply.</p>
+</div></section>
 
 <section class="section"><div class="wrap"><div class="prose">
-  <div id="contactBox"><h2>联系方式</h2><p id="contactLine">我们的公开联系邮箱还没有添加。</p></div>
-  <h2>如果你已经有账号</h2>
-  <p>匹配成功后，学生和志愿者可以在个人主页上互发消息。关于申请的问题，请登录后在主页查看你的申请状态。</p>
-  <div class="hero-ctas"><a href="../login.html?role=student&amp;lang=zh" class="btn btn-primary">登录</a></div>
+  <div id="contactBox">
+    <h2>Get in touch</h2>
+    <p id="contactLine">Our public contact address has not been added yet.</p>
+  </div>
+  <h2>If you already have an account</h2>
+  <p>Matched volunteers and students can message each other from their dashboard. For anything about your application, log in and check your dashboard for your status.</p>
+  <div class="hero-ctas"><a href="login.html" class="btn btn-primary">Log In</a></div>
 </div></div></section>
 <script>
-  // 如需显示公开联系邮箱，请把邮箱地址填在下面的引号中，例如 "hello@example.org"。
+  // To show a public contact email, put it between the quotes below, e.g. "hello@example.org".
   var CONTACT_EMAIL = "";
   (function () {
     try {
       var email = (typeof CONTACT_EMAIL === 'string') ? CONTACT_EMAIL.trim() : '';
       if (email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
         var line = document.getElementById('contactLine');
-        line.textContent = '请发送邮件至 ';
+        line.textContent = 'Email us at ';
         var a = document.createElement('a'); a.href = 'mailto:' + email; a.textContent = email; a.style.color = 'var(--blue)'; a.style.fontWeight = '700';
-        line.appendChild(a);
+        line.appendChild(a); line.appendChild(document.createTextNode('.'));
       }
     } catch (e) {}
   })();
@@ -54,20 +60,37 @@
     <div class="footer-grid">
       <div>
         <div class="footer-logo"><span class="logo-mark">BC</span> Bridge to China</div>
-        <p class="mission-text">为中国学生提供免费的一对一英语口语练习，授课志愿者均经过我们团队的审核。</p>
+        <p class="mission-text">Free one-on-one English conversation practice for students in China, taught by volunteers who have been reviewed by our team.</p>
       </div>
-      <div><h5>了解更多</h5><ul>
-        <li><a href="about.html">关于我们</a></li><li><a href="how-it-works.html">参加流程</a></li>
-        <li><a href="curriculum.html">课程内容</a></li><li><a href="faq.html">常见问题</a></li></ul></div>
-      <div><h5>学生专区</h5><ul>
-        <li><a href="students.html">学生须知</a></li><li><a href="contact.html">联系我们</a></li></ul></div>
-      <div><h5>账号</h5><ul>
-        <li><a href="../login.html?role=student&amp;lang=zh">登录</a></li><li><a href="../login.html?role=student&amp;mode=signup&amp;lang=zh">学生注册</a></li>
-        <li><a href="../index.html" lang="en">English version</a></li></ul></div>
+      <div>
+        <h5>Learn more</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="how-it-works.html">How It Works</a></li>
+          <li><a href="curriculum.html">Curriculum</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Get involved</h5>
+        <ul>
+          <li><a href="volunteers.html">Volunteers</a></li>
+          <li><a href="students.html">Students</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Account</h5>
+        <ul>
+          <li><a href="login.html">Log In</a></li>
+          <li><a href="login.html?mode=signup">Volunteer Sign Up</a></li>
+          <li><a href="login.html?role=student&amp;mode=signup">Student Sign Up</a></li>
+        </ul>
+      </div>
     </div>
     <div class="footer-bottom"><span>© 2026 Bridge to China</span></div>
   </div>
 </footer>
-<script src="../site.js"></script>
+<script src="site.js"></script>
 </body>
 </html>

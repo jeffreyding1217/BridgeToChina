@@ -52,6 +52,7 @@
 <div class="topbar"><b>Bridge to China — Admin Review</b><a href="volunteer-dashboard.html">← Volunteer dashboard</a></div>
 <div class="wrap" id="root"></div>
 
+<script src="availability.js"></script>
 <script src="auth-config.js"></script>
 <script>
 const STATUS_LABELS = {
@@ -465,6 +466,14 @@ function renderMatches(){
       + block.map(t => `<div class="block">⛔ ${esc(t)}</div>`).join('') + warn.map(t => `<div class="flag">⚠ ${esc(t)}</div>`).join('');
     btn.disabled = block.length > 0;
     btn.dataset.warn = warn.join(' | ');
+    const av = document.createElement('div'); av.style.cssText = 'margin-top:8px;font-size:.88rem;'; av.textContent = 'Volunteer calendar: loading…'; box.appendChild(av);
+    const vid = vObj.id;
+    supabaseClient.from('volunteer_availability').select('tz,slots').eq('volunteer_id', vid).maybeSingle().then(({ data, error }) => {
+      if (selV.value !== vid) return;
+      if (error) { av.textContent = 'Volunteer calendar: not set up (run Query 9).'; return; }
+      const lines = data ? BTC_AV.summary(data, 'en') : [];
+      av.innerHTML = lines.length ? '<b>Volunteer calendar (Beijing time):</b> ' + lines.map(l => esc(l.day + ' ' + l.times)).join(' · ') : 'Volunteer has not filled in the calendar yet.';
+    });
   };
   selS.onchange = compat; selV.onchange = compat;
   document.getElementById('mCreate').onclick = async (ev) => {

@@ -128,6 +128,28 @@
     </div>
   </div>
 
+  <h2 class="section-title">When You Can Teach</h2>
+  <div class="card" id="availCard" style="padding:22px 24px;margin-bottom:34px;">
+    <p style="margin:0 0 6px;font-size:.9rem;color:var(--ink-soft);">Each student has <b>one lesson per week</b> with you. Click or drag on a day to mark when you are usually free (zoom in for 15-minute precision). Only times that are between <b>8 AM and 11 PM in Beijing</b> can be picked, because that is when students are awake; the gray hours are blocked, and the left edge shows the matching Beijing time. Then add any dates you can't teach. Your students see these times in Beijing time, and the site warns you if you schedule outside them.</p>
+    <div id="avTz" style="font-size:.82rem;color:var(--ink-soft);margin-bottom:10px;"></div>
+    <div id="avGrid"><div style="padding:30px;text-align:center;color:var(--ink-soft);">Loading your calendar…</div></div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button id="avSave" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save my availability</button>
+      <button id="avClear" style="padding:9px 16px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:700;cursor:pointer;">Clear all</button>
+      <span class="mf-msg" id="avMsg" style="margin:0;"></span>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);"><b>Days I can't teach</b>
+      <div style="font-size:.82rem;color:var(--ink-soft);margin:4px 0 10px;">Trips, exams, holidays. Lessons will not be suggested on these dates.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div><label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px;">Date</label><input type="date" id="doDay" style="padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg-tint);"></div>
+        <div><label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px;">Note (only you see it)</label><input type="text" id="doNote" maxlength="100" placeholder="e.g. exams" style="padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg-tint);"></div>
+        <button id="doAdd" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">Add day off</button>
+      </div>
+      <div class="mf-msg" id="doMsg"></div>
+      <div id="doList" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
   <h2 class="section-title">Your Students</h2>
   <div id="matchesBox" style="margin-bottom:34px;"><div class="card" style="padding:24px;color:var(--ink-soft);font-size:.92rem;">Loading…</div></div>
 
@@ -144,6 +166,9 @@
   </div>
 </div>
 
+<script src="lessons-data.js"></script>
+<script src="availability.js"></script>
+<script src="availability-editor.js"></script>
 <script src="auth-config.js"></script>
 <script src="chat.js"></script>
 <script>
@@ -188,6 +213,7 @@
     const { data: app } = await supabaseClient.from('applications').select('status').eq('id', session.user.id).single();
     const st = app ? app.status : 'account_created';
     renderStatusBanner(st);
+    try { await loadAvailability(); } catch (e) { const g = document.getElementById('avGrid'); if (g) g.innerHTML = '<div class="mf-msg err">The calendar could not load: ' + esc(e.message || e) + '</div>'; }
     await renderStats(st);
   }
 
@@ -256,13 +282,15 @@
         <p style="font-size:.85rem;color:var(--ink-soft);margin:6px 0 10px;">Homework is typed on the student’s page and is due the day before your next lesson (China time), so you can read it and go over mistakes in class.</p>
         <div class="match-form">
           <div><label>Next lesson (your local time)</label><input type="datetime-local" id="hw_next${i}"></div>
-          <div style="display:flex;align-items:flex-end;"><button id="hw_nextbtn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save next lesson</button></div>
+          <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;"><button id="hw_nextbtn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save next lesson</button><button id="hw_week${i}" type="button" title="Moves the date one week later" style="padding:9px 16px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:700;cursor:pointer;">Same time next week</button></div>
         </div>
+        <div style="margin-top:8px;"><label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px;">Or choose one of your free times (from “When You Can Teach”)</label><select id="hw_free${i}" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg-tint);"><option value="">Fill in your availability above to see suggestions</option></select></div>
         <div class="mf-msg" id="hw_nextmsg${i}"></div>
         <div class="match-form" style="margin-top:10px;">
-          <div><label>Homework topic</label><input type="text" id="hw_topic${i}" maxlength="200" placeholder="e.g. Lesson 12 – Describing places"></div>
+          <div style="grid-column:1/-1;"><label>Lesson to assign homework from (filled in for you)</label><select id="hw_lesson${i}" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg-tint);"></select></div>
+          <div style="grid-column:1/-1;"><label>Homework topic</label><input type="text" id="hw_topic${i}" maxlength="200" placeholder="e.g. Lesson 12 – Describing places"></div>
         </div>
-        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin:10px 0 4px;">Instructions (copy the homework from the last slide of the lesson)</label>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin:10px 0 4px;">Instructions (you can edit this before assigning)</label>
         <textarea id="hw_prompt${i}" rows="3" maxlength="1500" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;background:var(--bg-tint);"></textarea>
         <div style="margin-top:10px;"><button id="hw_btn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">Assign homework</button></div>
         <div class="mf-msg" id="hw_msg${i}"></div>
@@ -312,6 +340,53 @@
   }
 
   const CN = { timeZone: 'Asia/Shanghai' };
+  let MY_AV = { tz: null, slots: [], days_off: [] };
+  const FREE_FILLERS = [], SUGGEST = {};
+  const BROWSER_TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } })();
+  async function loadAvailability(){
+    const card = document.getElementById('availCard'); if (!card || !isConfigured) return;
+    const msg = document.getElementById('avMsg'), say = (ok, t) => { msg.className = 'mf-msg ' + (ok ? 'ok' : 'err'); msg.textContent = t; };
+    const { data, error } = await supabaseClient.rpc('my_availability');
+    if (error) { document.getElementById('avGrid').innerHTML = '<div class="mf-msg err">' + esc(/my_availability|function/i.test(error.message || '') ? 'The calendar is not set up yet. The site owner needs to run QUERY 9.' : error.message) + '</div>'; return; }
+    MY_AV = { tz: (data && data.tz) || BROWSER_TZ, slots: (data && data.slots) || [], days_off: (data && data.days_off) || [] };
+    if (!BTC_AV.validTz(MY_AV.tz)) MY_AV.tz = BROWSER_TZ;
+    let cal = null;
+    function drawTz(){
+      document.getElementById('avTz').innerHTML = 'Times are in <b>' + esc(MY_AV.tz) + '</b>' + (MY_AV.tz !== BROWSER_TZ ? ' · <a href="#" id="avSwitch">switch to ' + esc(BROWSER_TZ) + ' (clears the calendar)</a>' : '') + '.';
+      const sw = document.getElementById('avSwitch'); if (sw) sw.onclick = e => { e.preventDefault(); MY_AV.tz = BROWSER_TZ; mountCal([]); drawTz(); };
+    }
+    function mountCal(ranges){ cal = BTC_AV_EDIT.mount(document.getElementById('avGrid'), { tz: MY_AV.tz, allowed: BTC_AV.allowedSegments(MY_AV.tz), ranges, onChange: () => { document.getElementById('avMsg').textContent = ''; } }); }
+    mountCal(BTC_AV.toRanges(MY_AV.slots));
+    drawTz();
+    document.getElementById('avClear').onclick = () => cal.clear();
+    document.getElementById('avSave').onclick = async () => {
+      const slots = BTC_AV.fromRanges(cal.getRanges());
+      const { error } = await supabaseClient.rpc('save_my_availability', { p_tz: MY_AV.tz, p_slots: slots });
+      if (error) return say(false, error.message);
+      MY_AV.slots = slots; say(true, slots.length ? 'Saved. Your students can see these times in Beijing time.' : 'Saved. No free hours are shown to students.'); FREE_FILLERS.forEach(f => f());
+    };
+    function drawOff(){
+      const l = document.getElementById('doList'), rows = MY_AV.days_off || [];
+      l.innerHTML = rows.length ? rows.map(x => '<span style="display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:.84rem;">' + esc(fmtDue(x.day)) + (x.note ? ' · ' + esc(x.note) : '') + ' <button data-day="' + esc(x.day) + '" aria-label="Remove" style="border:none;background:none;cursor:pointer;font-weight:700;">×</button></span>').join('') : '<span style="font-size:.84rem;color:var(--ink-soft);">No days off added.</span>';
+      l.querySelectorAll('button[data-day]').forEach(b => b.onclick = async () => {
+        const { error } = await supabaseClient.rpc('remove_day_off', { p_day: b.dataset.day });
+        if (error) { const mm = document.getElementById('doMsg'); mm.className = 'mf-msg err'; mm.textContent = error.message; return; }
+        MY_AV.days_off = MY_AV.days_off.filter(x => x.day !== b.dataset.day); drawOff(); FREE_FILLERS.forEach(f => f());
+      });
+    }
+    drawOff();
+    document.getElementById('doDay').min = new Date().toISOString().slice(0, 10);
+    document.getElementById('doAdd').onclick = async () => {
+      const mm = document.getElementById('doMsg'), day = document.getElementById('doDay').value;
+      if (!day) { mm.className = 'mf-msg err'; mm.textContent = 'Choose a date.'; return; }
+      const note = document.getElementById('doNote').value.trim();
+      const { error } = await supabaseClient.rpc('add_day_off', { p_day: day, p_note: note });
+      if (error) { mm.className = 'mf-msg err'; mm.textContent = error.message; return; }
+      mm.className = 'mf-msg ok'; mm.textContent = 'Added.';
+      MY_AV.days_off = (MY_AV.days_off || []).filter(x => x.day !== day).concat([{ day, note }]).sort((a, b) => a.day < b.day ? -1 : 1);
+      document.getElementById('doDay').value = ''; document.getElementById('doNote').value = ''; drawOff(); FREE_FILLERS.forEach(f => f());
+    };
+  }
   function fmtDue(d){ const [y, mo, da] = d.split('-').map(Number); return new Date(Date.UTC(y, mo - 1, da)).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); }
   function dueFromNext(iso){ const p = new Date(iso); const d = new Date(p.toLocaleDateString('en-CA', CN) + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
   function toLocalInput(iso){ const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
@@ -333,21 +408,53 @@
           <div style="font-size:.85rem;color:var(--ink-soft);margin-top:4px;white-space:pre-wrap;">${esc(h.prompt)}</div>
           ${h.answer ? '<div style="margin-top:8px;"><span style="font-size:.78rem;font-weight:700;color:' + (h.late ? '#b25a00' : 'var(--green)') + ';">' + (h.late ? 'Submitted late' : 'Submitted') + '</span><div style="white-space:pre-wrap;margin-top:4px;padding:8px 10px;background:var(--bg-tint);border-radius:8px;">' + esc(h.answer) + '</div></div>' : '<div style="margin-top:8px;font-size:.82rem;font-weight:700;color:#b25a00;">Not submitted yet</div>'}
         </div>`).join('') : '<div style="font-size:.85rem;color:var(--ink-soft);">No homework assigned yet.</div>';
+      if (SUGGEST[i]) SUGGEST[i](items);
       return data;
     }
+    function fillFree(){
+      const sel = q('hw_free'), ups = BTC_AV.upcoming(MY_AV, 21, 40);
+      if (!ups.length) { sel.innerHTML = '<option value="">Fill in and save your availability above to see suggestions</option>'; return; }
+      sel.innerHTML = '<option value="">Choose a free time…</option>' + ups.map(t => '<option value="' + t + '">' + esc(new Date(t).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' your time · ' + new Date(t).toLocaleString('en-US', { ...CN, weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' Beijing') + '</option>').join('');
+    }
+    FREE_FILLERS.push(fillFree); fillFree();
+    q('hw_free').onchange = () => { if (q('hw_free').value) q('hw_next').value = toLocalInput(new Date(+q('hw_free').value).toISOString()); };
+    q('hw_week').onclick = () => {
+      const v = q('hw_next').value;
+      if (!v) return note(q('hw_nextmsg'), false, 'Pick a date first, then press this to move it one week later.');
+      const d = new Date(v); d.setDate(d.getDate() + 7); q('hw_next').value = toLocalInput(d.toISOString());
+    };
     q('hw_nextbtn').onclick = async () => {
       const v = q('hw_next').value;
       if (!v) return note(q('hw_nextmsg'), false, 'Choose the date and time of your next lesson.');
+      const chk = BTC_AV.check(MY_AV, new Date(v).getTime());
+      if (chk.known && !chk.ok && !confirm(chk.reason === 'dayoff' ? 'You marked this date as a day you can’t teach. Save it anyway?' : chk.reason === 'bj' ? 'That is ' + new Date(v).toLocaleString('en-US', { ...CN, weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' in Beijing, when students are usually asleep. Save it anyway?' : 'This time is not in your free hours. Save it anyway?')) return;
       const { error } = await supabaseClient.rpc('set_next_lesson', { p_match_id: m.match_id, p_at: new Date(v).toISOString() });
       if (error) return note(q('hw_nextmsg'), false, /set_next_lesson|function/i.test(error.message || '') ? 'Homework is not set up yet. The site owner needs to run QUERY 8.' : error.message);
       refresh();
+    };
+    // One-press homework: the lesson list fills the topic and instructions automatically.
+    const LS = window.BTC_LESSONS || [], lessonSel = q('hw_lesson');
+    let lastLevel = null, optHtml = '<option value="">Choose a lesson…</option>', grp = '';
+    LS.forEach(l => { if (l.level !== lastLevel) { if (grp) optHtml += '</optgroup>'; optHtml += '<optgroup label="' + esc(l.level) + '">'; lastLevel = l.level; grp = l.level; } optHtml += '<option value="' + l.id + '">Lesson ' + l.id + ' – ' + esc(l.title) + '</option>'; });
+    lessonSel.innerHTML = optHtml + '</optgroup>';
+    function applyLesson(id){
+      const l = LS.find(x => String(x.id) === String(id)); lessonSel.value = l ? String(l.id) : '';
+      if (!l) return; q('hw_topic').value = 'Lesson ' + l.id + ' – ' + l.title; q('hw_prompt').value = l.hw;
+    }
+    lessonSel.onchange = () => applyLesson(lessonSel.value);
+    SUGGEST[i] = items => {
+      if (lessonSel.value || q('hw_topic').value) return;
+      const want = new URLSearchParams(location.search).get('hw');
+      if (want !== null && LS.some(x => String(x.id) === want)) return applyLesson(want);
+      let max = -1; (items || []).forEach(h => { const mm = /^Lesson (\d+)/.exec(h.topic || ''); if (mm) max = Math.max(max, +mm[1]); });
+      applyLesson(Math.min(max + 1, LS.length - 1));
     };
     q('hw_btn').onclick = async () => {
       const topic = q('hw_topic').value.trim(), prompt = q('hw_prompt').value.trim(), msg = q('hw_msg');
       if (!topic || !prompt) return note(msg, false, 'Add a topic and instructions.');
       const { error } = await supabaseClient.rpc('assign_homework', { p_match_id: m.match_id, p_topic: topic, p_prompt: prompt });
       if (error) return note(msg, false, /assign_homework|function/i.test(error.message || '') ? 'Homework is not set up yet. The site owner needs to run QUERY 8.' : error.message);
-      note(msg, true, 'Assigned. Your student can see it now.'); q('hw_topic').value = ''; q('hw_prompt').value = ''; refresh();
+      note(msg, true, 'Assigned. Your student can see it now.'); q('hw_topic').value = ''; q('hw_prompt').value = ''; lessonSel.value = ''; refresh();
     };
     refresh();
   }

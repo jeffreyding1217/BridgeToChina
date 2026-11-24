@@ -89,13 +89,13 @@
   <div class="action-card">
     <div class="eyebrow">JOIN YOUR LESSON · 参加课程</div>
     <h2>How lessons work · 上课方式</h2>
-    <p>Lessons happen on VooV Meeting. Once you are matched and a lesson is booked, your volunteer will send you a meeting link a few minutes before it starts. Download the app now so you are ready.<br>课程通过腾讯会议国际版 VooV Meeting 进行。匹配成功并预约课程后，志愿者会在开课前几分钟把会议链接发给你。请提前下载好应用。</p>
+    <p>Lessons happen on VooV Meeting. Once you are matched and a lesson is booked, your volunteer will send you a meeting link a few minutes before it starts. VooV Meeting does not work in a web browser. You must download the app first.<br>课程通过腾讯会议国际版 VooV Meeting 进行。匹配成功并预约课程后，志愿者会在开课前几分钟把会议链接发给你。<b>VooV 无法在网页浏览器中使用，请务必先下载并安装应用。</b></p>
     <ol class="steps-mini">
-      <li>下载 VooV Meeting</li>
+      <li>Download and install the app · 下载并安装 VooV Meeting 应用</li>
       <li>Wait for your volunteer's link · 等待志愿者发送链接</li>
-      <li>Tap the link at lesson time · 到时间点击链接加入</li>
+      <li>Open the app at lesson time and join with the link or Meeting ID · 到时间打开应用，用链接或会议号加入</li>
     </ol>
-    <a class="a-btn" href="https://voovmeeting.com/download" target="_blank" rel="noopener">下载 VooV Meeting</a>
+    <a class="a-btn" href="https://voovmeeting.com/download" target="_blank" rel="noopener">Download the app · 下载 VooV 应用</a>
   </div>
 
   <h2 class="section-title">Your Volunteer · 你的志愿者</h2>
@@ -171,7 +171,7 @@
         ${m.meeting_id ? T('Meeting ID','会议号') + ': <b data-keep-en>' + esc(m.meeting_id) + '</b><br>' : ''}
         ${m.meeting_password ? T('Password','密码') + ': <b data-keep-en>' + esc(m.meeting_password) + '</b><br>' : ''}
         </div>
-        ${ok ? '<a class="joinbtn" href="' + esc(m.meeting_link) + '" target="_blank" rel="noopener noreferrer">' + T('Join lesson on VooV','加入腾讯会议上课') + '</a>'
+        ${ok ? '<a class="joinbtn" href="' + esc(m.meeting_link) + '" target="_blank" rel="noopener noreferrer">' + T('Open lesson in the VooV app','在 VooV 应用中加入课程') + '</a>'
              : '<div class="vmeta" style="margin-top:12px;">' + T('Your volunteer has not added the meeting link yet.','你的志愿者还没有添加会议链接。') + '</div>'}
         <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);"><b>${T('Messages','消息')}</b><div id="chatS" style="margin-top:8px;"></div></div></div>`;
     }).join('');

@@ -145,7 +145,7 @@
 
 <div class="topbar">
   <div class="brand"><span class="mark">BC</span> Lesson Library</div>
-  <div class="hint">Fill in your name and notes right on the slide, then share this tab on your VooV call.</div>
+  <div class="hint">Fill in your name right on the slide, then share your screen on your VooV call.</div>
 </div>
 
 <div class="app">
@@ -1809,7 +1809,6 @@ function warmSlideHTML(s){
       <div style="overflow-y:auto; flex:1;">
         ${s.topic.warm.map((q,i) => `<div class="ib-row"><span class="ib-num">${i+1}</span><span>${E(q)}</span></div>`).join('')}
         <div style="font-size:0.84em; color:var(--ink-soft); margin:0.8em 0 0.4em;">Teacher reminders: ask the student to answer in complete sentences · correct mistakes naturally, don’t interrupt.</div>
-        <input class="line-input" type="text" data-field="warm_notes" placeholder="Notes about the student’s answers…">
       </div>
     </div>`;
 }
@@ -1829,11 +1828,7 @@ function vocabSlideHTML(s){
             <b style="color:var(--blue-deep);">${E(w)}</b><span class="zhcol" style="color:var(--ink-soft); ${zhStyle}">${E(zh)}</span><span>${E(ex)}</span>
           </div>`).join('')}
       </div>
-      <div style="margin-top:0.5em;">
-        <div style="font-size:0.78em; color:var(--ink-soft); margin-bottom:0.2em;">Now the student makes their own sentence with each word. Write good ones here:</div>
-        <input class="line-input" type="text" data-field="vocab_s1" placeholder="1. ..." style="margin-bottom:0.4em;">
-        <input class="line-input" type="text" data-field="vocab_s2" placeholder="2. ..." style="margin-bottom:0;">
-      </div>
+      <div style="margin-top:0.5em; font-size:0.78em; color:var(--ink-soft);">Now the student makes their own sentence with each word.</div>
     </div>`;
 }
 
@@ -1927,14 +1922,11 @@ function wrapSlideHTML(s){
           <div class="question-row"><span class="chk" data-chk="rv1"></span><span>Say the grammar rule in your own words</span></div>
           <div class="question-row"><span class="chk" data-chk="rv2"></span><span>Fix one common mistake</span></div>
           <div class="question-row"><span class="chk" data-chk="rv3"></span><span>Student shares one thing they learned</span></div>
-          <input class="line-input" type="text" data-field="learned" placeholder="Student said they learned…" style="margin-top:0.6em;">
         </div>
         <div class="card">
           <h4 style="color:#1e4e8c;">HOMEWORK</h4>
           <div style="font-size:0.98em; margin-bottom:0.8em; font-weight:600;">${E(t.homework)}</div>
-          <h4 style="color:#1e4e8c;">NOTES FOR NEXT SESSION</h4>
-          <input class="line-input" type="text" data-field="notes1" placeholder="...">
-          <input class="line-input" type="text" data-field="notes2" placeholder="...">
+          <div style="font-size:0.8em; color:var(--ink-soft);">Assign this in your dashboard. It is due the day before the next lesson, and the student types the answer there so you can review it in class.</div>
         </div>
       </div>
     </div>`;
@@ -2016,7 +2008,7 @@ function introWrapSlideHTML(){
       </div>
       <div class="card" style="flex:1; min-height:0; display:flex; flex-direction:column; margin-top:0.6em;">
         <h4>HOMEWORK · PICK 3 TOPICS TO REVIEW</h4>
-        <p style="margin:0 0 0.4em; font-size:0.85em;">Look at the topics for the chosen level. The student picks 3 they want to review. Write the numbers below.</p>
+        <p style="margin:0 0 0.4em; font-size:0.85em;">Look at the topics for the chosen level. The student picks 3 they want to review. Write the numbers below, then assign it in your dashboard with the next lesson date.</p>
         <div id="hwList" style="flex:1; min-height:0; overflow:auto; columns:3; column-gap:1em; font-size:0.72em; line-height:1.5; border:1px solid var(--line); border-radius:8px; padding:0.4em 0.7em;"></div>
         <div style="display:flex; gap:0.6em; margin-top:0.5em;">
           <input class="line-input" type="text" data-field="hw_topic1" placeholder="Topic 1 (number)..." style="flex:1;">

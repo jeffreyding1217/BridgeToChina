@@ -22,6 +22,8 @@
     'You are sending messages too quickly. Please wait a while.': '发送太频繁了，请稍等一会儿再试。',
     'For safety, please do not share emails, phone numbers, links or other contact details here.': '为了安全，请不要在这里分享邮箱、电话号码、链接或其他联系方式。',
     'One moment…': '请稍候…',
+    'Homework not found.': '找不到这份作业。',
+    'Answers must be 1 to 5000 characters.': '答案长度需在 1 到 5000 个字符之间。',
     'Unknown error': '未知错误'
   };
   var RULES = window.BTC_RULES = [

@@ -103,3 +103,12 @@ The site now has two complete versions instead of mixed pages:
 The lessons 61–120 were also written by Claude (including Chinese glosses and answer keys) and should be read by a fluent English speaker before you rely on them.
 
 The first-day lesson (Lesson 0) now ends with a homework card: the student picks 3 topics to review from the list for the chosen level.
+
+## Homework with due dates (Query 8)
+
+Run QUERY 8 (in SQL-EDITOR-QUERIES.md or query8.sql) after Queries 6 and 7. Then:
+1. On the volunteer dashboard, each student card has a **Homework** section. The volunteer saves the **next lesson** date and time, then assigns homework (topic and instructions).
+2. The due date is set automatically to the **day before the next lesson (China time)**, at the end of that day.
+3. The student types the answer on their dashboard and presses Submit. Late answers are allowed and marked late.
+4. The volunteer sees the typed answers and their status in the same section, so mistakes can be reviewed in class.
+Homework is shown only to the two people in the match (and admins can read it in the database).

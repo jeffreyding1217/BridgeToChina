@@ -173,10 +173,47 @@
         </div>
         ${ok ? '<a class="joinbtn" href="' + esc(m.meeting_link) + '" target="_blank" rel="noopener noreferrer">' + T('Open lesson in the VooV app','在 VooV 应用中加入课程') + '</a>'
              : '<div class="vmeta" style="margin-top:12px;">' + T('Your volunteer has not added the meeting link yet.','你的志愿者还没有添加会议链接。') + '</div>'}
-        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);"><b>${T('Messages','消息')}</b><div id="chatS" style="margin-top:8px;"></div></div></div>`;
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);"><b>${T('Messages','消息')}</b><div id="chatS" style="margin-top:8px;"></div></div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);"><b>${T('Homework','作业')}</b>
+          <div style="font-size:.85rem;color:var(--ink-soft);margin:4px 0 10px;">${T('Type your answer here and press Submit. It is due the day before your next lesson, so your volunteer can read it and help with mistakes in class.','请在这里输入你的答案并点击提交。截止时间是下节课的前一天，这样志愿者可以提前阅读，并在课上帮你改正错误。')}</div>
+          <div id="hwS">...</div></div></div>`;
     }).join('');
     mountChat(document.getElementById('chatS'), list[0].match_id, supabaseClient, T('For your safety, do not share phone numbers, emails or links.','为了安全，请不要分享电话、邮箱或链接。'));
     loadHistory();
+    loadHomework(list[0].match_id);
+  }
+
+  function fmtDue(d){ const [y, mo, da] = d.split('-').map(Number); return new Date(Date.UTC(y, mo - 1, da)).toLocaleDateString(window.BTC_ZH ? 'zh-CN' : 'en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }); }
+  async function loadHomework(matchId){
+    const box = document.getElementById('hwS'); if (!box) return;
+    const { data, error } = await supabaseClient.rpc('my_homework', { p_match_id: matchId });
+    if (error) { box.textContent = T('Homework is not available yet.', '作业功能暂未开通。'); return; }
+    const items = (data && data.items) || [];
+    const todayCN = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+    if (!items.length) { box.textContent = T('No homework yet.', '目前还没有作业。'); return; }
+    box.innerHTML = items.map((h, k) => {
+      const overdue = !h.answer && todayCN > h.due_date;
+      const status = h.answer ? (h.late ? T('Submitted late','已提交（逾期）') : T('Submitted ✓','已提交 ✓')) : (overdue ? T('Overdue','已逾期') : T('Not submitted yet','尚未提交'));
+      const color = h.answer && !h.late ? 'var(--green)' : '#b25a00';
+      return `<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;">
+        <b data-keep-en>${esc(h.topic)}</b>
+        <div style="font-size:.82rem;color:var(--ink-soft);margin:2px 0 6px;">${T('Due','截止')}: ${esc(fmtDue(h.due_date))} ${T('(end of the day, China time)','（当天北京时间结束前）')}</div>
+        <div style="white-space:pre-wrap;font-size:.92rem;" data-keep-en>${esc(h.prompt)}</div>
+        <textarea id="hwa${k}" rows="4" maxlength="5000" style="width:100%;margin-top:8px;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;">${esc(h.answer || '')}</textarea>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+          <button id="hwb${k}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">${h.answer ? T('Update answer','修改答案') : T('Submit','提交')}</button>
+          <span style="font-size:.82rem;font-weight:700;color:${color};">${status}</span><span id="hwm${k}" style="font-size:.82rem;"></span>
+        </div></div>`;
+    }).join('');
+    items.forEach((h, k) => {
+      document.getElementById('hwb' + k).onclick = async () => {
+        const v = document.getElementById('hwa' + k).value.trim(), m = document.getElementById('hwm' + k);
+        if (!v) { m.style.color = '#c0392b'; m.textContent = T('Please type your answer first.', '请先输入你的答案。'); return; }
+        const { error } = await supabaseClient.rpc('submit_homework', { p_id: h.id, p_answer: v });
+        if (error) { m.style.color = '#c0392b'; m.textContent = (window.BTC_ZH && BTC_DICT[error.message]) || error.message; return; }
+        loadHomework(matchId);
+      };
+    });
   }
 
   document.getElementById('logoutLink').addEventListener('click', async (e) => {

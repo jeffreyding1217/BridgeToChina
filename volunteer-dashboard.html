@@ -101,11 +101,11 @@
     <div class="action-card green">
       <div class="eyebrow">VIDEO CALLS</div>
       <h2>Join Your Session</h2>
-      <p>Sessions run on VooV Meeting (not Google — it works reliably in China). <b>VooV does not work in a web browser: download and install the app first.</b> Open the app, start or join your meeting room, then switch to the Lesson Library tab and share that window.</p>
+      <p>Sessions run on VooV Meeting (not Google — it works reliably in China). <b>VooV does not work in a web browser: download and install the app first.</b> Open the app, start or join your meeting room, then open the Lesson Library and share your screen.</p>
       <ol class="steps-mini">
         <li>Install the VooV app, open it and start your meeting</li>
         <li>Send the student your meeting ID/link</li>
-        <li>Open the Lesson Library, share that tab</li>
+        <li>Open the Lesson Library and share your screen</li>
       </ol>
       <div class="btns">
         <a class="a-btn" href="https://voovmeeting.com/download" target="_blank" rel="noopener">Download the VooV App</a>
@@ -252,6 +252,22 @@
       <div style="margin-top:12px;"><button class="btn btn-primary" id="mf_save${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save meeting details</button></div>
       <div class="mf-msg" id="mf_msg${i}"></div>
       <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);"><b>Messages</b><div id="chat${i}" style="margin-top:8px;"></div></div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);"><b>Homework</b>
+        <p style="font-size:.85rem;color:var(--ink-soft);margin:6px 0 10px;">Homework is typed on the student’s page and is due the day before your next lesson (China time), so you can read it and go over mistakes in class.</p>
+        <div class="match-form">
+          <div><label>Next lesson (your local time)</label><input type="datetime-local" id="hw_next${i}"></div>
+          <div style="display:flex;align-items:flex-end;"><button id="hw_nextbtn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;">Save next lesson</button></div>
+        </div>
+        <div class="mf-msg" id="hw_nextmsg${i}"></div>
+        <div class="match-form" style="margin-top:10px;">
+          <div><label>Homework topic</label><input type="text" id="hw_topic${i}" maxlength="200" placeholder="e.g. Lesson 12 – Describing places"></div>
+        </div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin:10px 0 4px;">Instructions (copy the homework from the last slide of the lesson)</label>
+        <textarea id="hw_prompt${i}" rows="3" maxlength="1500" style="width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;background:var(--bg-tint);"></textarea>
+        <div style="margin-top:10px;"><button id="hw_btn${i}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">Assign homework</button></div>
+        <div class="mf-msg" id="hw_msg${i}"></div>
+        <div id="hw_list${i}" style="margin-top:12px;"></div>
+      </div>
       <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);"><b>Report a lesson you taught</b>
         <div class="match-form">
           <div><label>Lesson date</label><input type="date" id="lr_date${i}"></div>
@@ -284,6 +300,7 @@
       document.getElementById('lr_sum' + i).value = ''; document.getElementById('lr_topic' + i).value = '';
       loadHoursCard();
     };
+    wireHomework(m, i);
     document.getElementById('mf_save' + i).onclick = async () => {
       const g = id => document.getElementById(id + i).value.trim();
       const msg = document.getElementById('mf_msg' + i);
@@ -292,6 +309,47 @@
       msg.className = 'mf-msg ' + (error ? 'err' : 'ok');
       msg.textContent = error ? error.message : 'Saved. Your student can now see these details.';
     };
+  }
+
+  const CN = { timeZone: 'Asia/Shanghai' };
+  function fmtDue(d){ const [y, mo, da] = d.split('-').map(Number); return new Date(Date.UTC(y, mo - 1, da)).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); }
+  function dueFromNext(iso){ const p = new Date(iso); const d = new Date(p.toLocaleDateString('en-CA', CN) + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
+  function toLocalInput(iso){ const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
+  async function wireHomework(m, i){
+    const q = id => document.getElementById(id + i);
+    const note = (el, ok, t) => { el.className = 'mf-msg ' + (ok ? 'ok' : 'err'); el.textContent = t; };
+    async function refresh(){
+      const { data, error } = await supabaseClient.rpc('my_homework', { p_match_id: m.match_id });
+      const list = q('hw_list');
+      if (error) { list.innerHTML = '<div class="mf-msg err">' + esc(/my_homework|function/i.test(error.message || '') ? 'Homework is not set up yet. The site owner needs to run QUERY 8.' : error.message) + '</div>'; return null; }
+      const nxt = data && data.next_lesson_at;
+      if (nxt) {
+        q('hw_next').value = toLocalInput(nxt);
+        note(q('hw_nextmsg'), true, 'Next lesson: ' + new Date(nxt).toLocaleString('en-US', CN) + ' Beijing time. New homework is due ' + fmtDue(dueFromNext(nxt)) + ' (China time).');
+      }
+      const items = (data && data.items) || [];
+      list.innerHTML = items.length ? items.map(h => `<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff;">
+          <b>${esc(h.topic)}</b> <span style="font-size:.8rem;color:var(--ink-soft);">· due ${esc(fmtDue(h.due_date))} (China time)</span>
+          <div style="font-size:.85rem;color:var(--ink-soft);margin-top:4px;white-space:pre-wrap;">${esc(h.prompt)}</div>
+          ${h.answer ? '<div style="margin-top:8px;"><span style="font-size:.78rem;font-weight:700;color:' + (h.late ? '#b25a00' : 'var(--green)') + ';">' + (h.late ? 'Submitted late' : 'Submitted') + '</span><div style="white-space:pre-wrap;margin-top:4px;padding:8px 10px;background:var(--bg-tint);border-radius:8px;">' + esc(h.answer) + '</div></div>' : '<div style="margin-top:8px;font-size:.82rem;font-weight:700;color:#b25a00;">Not submitted yet</div>'}
+        </div>`).join('') : '<div style="font-size:.85rem;color:var(--ink-soft);">No homework assigned yet.</div>';
+      return data;
+    }
+    q('hw_nextbtn').onclick = async () => {
+      const v = q('hw_next').value;
+      if (!v) return note(q('hw_nextmsg'), false, 'Choose the date and time of your next lesson.');
+      const { error } = await supabaseClient.rpc('set_next_lesson', { p_match_id: m.match_id, p_at: new Date(v).toISOString() });
+      if (error) return note(q('hw_nextmsg'), false, /set_next_lesson|function/i.test(error.message || '') ? 'Homework is not set up yet. The site owner needs to run QUERY 8.' : error.message);
+      refresh();
+    };
+    q('hw_btn').onclick = async () => {
+      const topic = q('hw_topic').value.trim(), prompt = q('hw_prompt').value.trim(), msg = q('hw_msg');
+      if (!topic || !prompt) return note(msg, false, 'Add a topic and instructions.');
+      const { error } = await supabaseClient.rpc('assign_homework', { p_match_id: m.match_id, p_topic: topic, p_prompt: prompt });
+      if (error) return note(msg, false, /assign_homework|function/i.test(error.message || '') ? 'Homework is not set up yet. The site owner needs to run QUERY 8.' : error.message);
+      note(msg, true, 'Assigned. Your student can see it now.'); q('hw_topic').value = ''; q('hw_prompt').value = ''; refresh();
+    };
+    refresh();
   }
 
   const STATUS_LABELS = {

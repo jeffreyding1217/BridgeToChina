@@ -7,6 +7,7 @@
 <script src="supabase.js"></script>
 <script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
 <style>
+  .btc-logo{border-radius:50%;background:#fff;object-fit:contain;flex:none;display:inline-block;vertical-align:middle;}
   :root{
     --bg:#ffffff; --bg-tint:#f5faf8; --blue:#1e4e8c; --blue-deep:#133761; --green:#1f8a5f; --green-deep:#146a48;
     --amber:#f2a73b; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4;
@@ -54,11 +55,13 @@
   .back{ text-align:center; margin-top:22px; }
   .back a{ color:var(--ink-soft); font-size:0.85rem; text-decoration:none; }
 </style>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 
 <div style="width:100%; max-width:440px;">
-  <div class="logo"><span class="mark">BC</span> Bridge to China</div>
+  <div class="logo"><img class="btc-logo" src="logo.png" alt="" width="40" height="40"> Bridge to China</div>
 
   <div class="card">
     <div class="tabs">
@@ -94,6 +97,7 @@
           <input type="password" id="passwordInput" placeholder="••••••••" required minlength="6">
         </div>
         <button class="btn" type="submit" id="submitBtn">Log In</button>
+        <p id="legalNote" style="display:none;font-size:.8rem;color:var(--ink-soft);margin:12px 0 0;line-height:1.55;"></p>
       </form>
 
       <div class="msg" id="formMsg"></div>
@@ -174,6 +178,11 @@
     document.querySelector('#passwordInput').previousElementSibling.textContent = c.pw;
     document.getElementById('modeLogin').textContent = role === 'student' ? '登录' : 'Log In';
     document.getElementById('modeSignup').textContent = role === 'student' ? '注册' : 'Create an Account';
+    const ln = document.getElementById('legalNote');
+    ln.style.display = mode === 'signup' ? 'block' : 'none';
+    ln.innerHTML = role === 'student'
+      ? '创建账号即表示你同意我们的<a href="zh/terms.html" target="_blank" rel="noopener">使用条款</a>和<a href="zh/privacy.html" target="_blank" rel="noopener">隐私政策</a>。'
+      : 'By creating an account you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.';
   }
 
   function setRole(r){

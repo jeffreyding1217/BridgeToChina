@@ -7,6 +7,7 @@
 <script src="supabase.js"></script>
 <script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
 <style>
+  .btc-logo{border-radius:50%;background:#fff;object-fit:contain;flex:none;display:inline-block;vertical-align:middle;}
   :root{ --blue:#1e4e8c; --blue-deep:#133761; --green:#1f8a5f; --green-deep:#146a48; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4; --tint:#f5faf8; }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:var(--tint); color:var(--ink); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
@@ -19,10 +20,12 @@
   .btn{ display:inline-block; padding:13px 30px; border-radius:999px; background:var(--blue); color:#fff; font-weight:700; text-decoration:none; font-size:.95rem; margin-top:6px; }
   .btn.ghost{ background:#fff; color:var(--blue); border:1.5px solid var(--line); }
 </style>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 <div class="card">
-  <div class="logo"><span class="mark">BC</span> Bridge to China</div>
+  <div class="logo"><img class="btc-logo" src="logo.png" alt="" width="40" height="40"> Bridge to China</div>
   <div id="out"><p>One moment…</p></div>
 </div>
 <script src="lang.js"></script>

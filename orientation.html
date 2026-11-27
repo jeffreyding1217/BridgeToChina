@@ -7,6 +7,7 @@
 <script src="supabase.js"></script>
 <script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
 <style>
+  .btc-logo{border-radius:50%;background:#fff;object-fit:contain;flex:none;display:inline-block;vertical-align:middle;}
   :root{ --blue:#1e4e8c; --blue-deep:#133761; --green:#1f8a5f; --green-deep:#146a48; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4; --tint:#f5faf8; }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; color:var(--ink); background:var(--tint); }
@@ -33,10 +34,12 @@
   .msg.bad{ background:#fdecea; color:#a3312a; display:block; } .msg.good{ background:#e7f5ee; color:var(--green-deep); display:block; }
   .center{ text-align:center; padding:50px 20px; }
 </style>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 <div class="topbar">
-  <a href="index.html" class="brand"><span class="mark">BC</span> Bridge to China</a>
+  <a href="index.html" class="brand"><img class="btc-logo" src="logo.png" alt="" width="34" height="34"> Bridge to China</a>
   <a href="application.html" style="font-size:.85rem;color:var(--blue);font-weight:600;text-decoration:none;">← Back to application</a>
 </div>
 <div class="wrap" id="root"></div>
@@ -50,13 +53,15 @@
 const PASS_MARK = 80;
 const SECTIONS = [
  ['How the Program Works', ['Students are matched with approved volunteers for a weekly 30-minute online conversation session.','Each session follows a lesson template: warm-up, introduction, guided practice, free conversation, and wrap-up.','Sessions are free for students, and volunteers earn verified service hours for completed sessions.']],
- ['How Online Lessons Work', ['Lessons are held over VooV Meeting, which works reliably in mainland China.','Start the meeting yourself and send the student the link shortly before the session.','Open the Lesson Library in your browser and share your screen so the student can follow along. VooV does not work in a web browser, so install the VooV app first.','Join from a quiet, well-lit, appropriate space with your camera on.']],
+ ['How Online Lessons Work', ['Lessons are held over VooV Meeting, which works reliably in mainland China.','Use the meeting details saved for your student on your dashboard. If the link does not work for you, ask the student to host the meeting in the Tencent Meeting app (腾讯会议) and join with their meeting ID.','Open the Lesson Library in your browser and share your screen so the student can follow along. VooV does not work in a web browser, so install the VooV app first.','Join from a quiet, well-lit, appropriate space with your camera on.']],
+ ['Weekly Lessons & Scheduling', ['Each student has one lesson per week with you. The site will not let you count a second lesson with the same student in the same week.','Fill in your free hours in "When You Can Teach" on your dashboard, and add any days you cannot teach. Students see these times in Beijing time.','Students are only available between 8 AM and 11 PM Beijing time. Agree each lesson time with your student in Messages, then save it as the next lesson on your dashboard.','If you cannot make a lesson, tell your student as early as you can and move it to another day that week or the next.']],
+ ['Homework', ['After each lesson, assign the lesson\'s homework from your dashboard. The homework is filled in for you; check it and press Assign.','Homework is due the day before the next lesson, so you can read it and go over mistakes together in class.','Students type their answers on their page. Be encouraging: focus on one or two things to improve.']],
  ['Preparing Your Lessons', ['Choose the lesson that matches the student\'s level and review its focus areas beforehand.','Fill in the lesson template — your name, vocabulary you plan to teach, and practice sentences.','Have a few follow-up questions ready so the conversation never stalls.']],
  ['Communicating With Students', ['Speak clearly and a little slower than you normally would, and use short, simple sentences with beginners.','Check understanding often by asking students to explain things back in their own words.','Be patient with silence — give students time to think before helping.','Correct gently: focus on one or two important mistakes rather than every error.']],
  ['Cultural Respect', ['Be curious, not judgmental. Ask students about their lives and share yours.','Avoid stereotypes and avoid pressing your opinions on sensitive topics such as politics or religion. Let students lead, and steer back to the lesson if a topic becomes uncomfortable.','Remember that you are a guest in a cultural exchange, not an authority on what is "right."']],
  ['Privacy', ['Keep everything students tell you confidential, except where safety requires you to report it.','Never share a student\'s name, photo, or details publicly or on social media.','Do not record or screenshot lessons without explicit permission from the program.']],
- ['Student Safety & Boundaries', ['Keep all communication on the program\'s approved channels. Do not exchange personal phone numbers, social media accounts, or private messaging contacts with students.','Do not arrange private meetings, send gifts, or ask students for money, favors, or personal information.','Keep conversations appropriate for students\' ages at all times.','If a student pushes for private contact, politely decline and let the program team know.','If you are under 18: hold your lessons in a shared area of your home (not alone behind a closed bedroom door), and make sure a parent or guardian knows when your lessons are.']],
- ['Reporting Concerns', ['If you are worried about a student\'s safety or wellbeing, or another volunteer\'s behavior, tell the program team promptly — do not try to handle it alone or promise to keep it secret.','Write down what you saw or heard as soon as you can, factually.','If a student appears to be in immediate danger, contact local emergency services in the student\'s location if you can, and then notify the program team.']],
+ ['Student Safety & Boundaries', ['Use the Messages box on your dashboard for contact with your student. Keep all communication on the program\'s approved channels. Do not exchange personal phone numbers, social media accounts, or private messaging contacts with students.','Do not arrange private meetings, send gifts, or ask students for money, favors, or personal information.','Keep conversations appropriate for students\' ages at all times.','If a student pushes for private contact, politely decline and let the program team know.','If you are under 18: hold your lessons in a shared area of your home (not alone behind a closed bedroom door), and make sure a parent or guardian knows when your lessons are.']],
+ ['Reporting Concerns', ['If you are worried about a student\'s safety or wellbeing, or another volunteer\'s behavior, tell the program team promptly — do not try to handle it alone or promise to keep it secret. Use the Contact page on our website to reach the team.','Write down what you saw or heard as soon as you can, factually.','If a student appears to be in immediate danger, contact local emergency services in the student\'s location if you can, and then notify the program team.']],
  ['Volunteer Hours & Lesson Reports', ['Hours are logged for completed sessions and confirmed by an administrator before they count toward your certificate.','Submit a short lesson report after every session while it\'s fresh: what you covered, how the student did, and anything to follow up on.']],
 ];
 const QUIZ = [
@@ -64,6 +69,8 @@ const QUIZ = [
  ['A student mentions something that makes you worry about their safety. What should you do?',['Keep it secret to protect their trust','Report it to the program team promptly','Wait a few weeks to see if it happens again','Post about it online asking for advice'],1],
  ['A student keeps making the same mistake. What is the best approach?',['Tell them they are wrong each time','Skip the topic','Correct them in front of others','Re-explain in a different way, give an example, and encourage them'],3],
  ['When should you submit your lesson report?',['Promptly after each session','Once a month','Only if something went wrong','Right before your certificate is issued'],0],
+ ['How many lessons can you count with the same student in one week?',['As many as you like','One lesson per week','Two lessons per week','One lesson per month'],1],
+ ['When is homework due?',['The day after the next lesson','Whenever the student wants','The day before the next lesson, so you can review it in class','Right after the lesson ends'],2],
  ['How do volunteer hours count toward your certificate?',['Instantly, with no review','Only after a student rates you','They are logged for completed sessions and confirmed by an administrator','Hours scheduled count even if the session was missed'],2],
  ['Can you post a screenshot of a lesson, with the student visible, on social media?',['Yes, if you tag the program','No — never share student images or details without explicit permission','Yes, if the student smiles','Yes, if you blur their name'],1],
  ['A conversation drifts to a sensitive political topic and the student seems uncomfortable. What should you do?',['Share your strongest opinion so they learn','End the session immediately','Gently steer back to the lesson topic','Ask them to explain their views in detail'],2],

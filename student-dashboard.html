@@ -7,6 +7,7 @@
 <script src="supabase.js"></script>
 <script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
 <style>
+  .btc-logo{border-radius:50%;background:#fff;object-fit:contain;flex:none;display:inline-block;vertical-align:middle;}
   :root{
     --bg:#ffffff; --bg-tint:#f5faf8; --bg-tint-2:#eef6f2; --blue:#1e4e8c; --blue-deep:#133761;
     --green:#1f8a5f; --green-deep:#146a48; --amber:#f2a73b; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4;
@@ -68,10 +69,12 @@
   .vmeta{ font-size:.9rem; color:var(--ink-soft); line-height:1.75; }
   .joinbtn{ display:inline-block; margin-top:14px; background:var(--green); color:#fff; font-weight:700; padding:12px 24px; border-radius:999px; }
 </style>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 <div class="topbar">
-  <a href="index.html" class="brand"><span class="mark">BC</span> Bridge to China</a>
+  <a href="index.html" class="brand"><img class="btc-logo" src="logo.png" alt="" width="34" height="34"> Bridge to China</a>
   <div class="who"><span class="avatar-sm" id="avatarInitial">S</span> <b id="whoName">Student</b> &nbsp;·&nbsp; <a href="#" id="logoutLink">Log Out · 退出</a></div>
 </div>
 
@@ -104,6 +107,7 @@
 
 <script>window.BTC_ZH_DEFAULT = true;</script>
 <script src="lang.js"></script>
+<script src="lessons-data.js"></script>
 <script src="availability.js"></script>
 <script src="auth-config.js"></script>
 <script src="chat.js"></script>
@@ -187,6 +191,8 @@
     loadHomework(list[0].match_id);
     loadAvail(list[0].match_id);
   }
+  // Chinese version of a homework prompt (when the volunteer used the lesson's own homework text)
+  function hwZh(prompt){ const t = String(prompt || '').trim(); const l = (window.BTC_LESSONS || []).find(x => x.hw === t); return l ? l.hz : ''; }
   async function loadAvail(matchId){
     const box = document.getElementById('availS'); if (!box) return;
     const { data, error } = await supabaseClient.rpc('match_availability', { p_match_id: matchId });
@@ -212,7 +218,7 @@
       return `<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;">
         <b data-keep-en>${esc(h.topic)}</b>
         <div style="font-size:.82rem;color:var(--ink-soft);margin:2px 0 6px;">${T('Due','截止')}: ${esc(fmtDue(h.due_date))} ${T('(end of the day, China time)','（当天北京时间结束前）')}</div>
-        <div style="white-space:pre-wrap;font-size:.92rem;" data-keep-en>${esc(h.prompt)}</div>
+        <div style="white-space:pre-wrap;font-size:.92rem;" data-keep-en>${esc(h.prompt)}</div>${hwZh(h.prompt) ? '<div style="white-space:pre-wrap;font-size:.92rem;margin-top:6px;color:var(--ink-soft);" data-keep-en>' + esc(hwZh(h.prompt)) + '</div>' : ''}
         <textarea id="hwa${k}" rows="4" maxlength="5000" style="width:100%;margin-top:8px;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;">${esc(h.answer || '')}</textarea>
         <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">
           <button id="hwb${k}" style="padding:9px 20px;border-radius:999px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;">${h.answer ? T('Update answer','修改答案') : T('Submit','提交')}</button>

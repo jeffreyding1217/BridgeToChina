@@ -7,6 +7,7 @@
 <script src="supabase.js"></script>
 <script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
 <style>
+  .btc-logo{border-radius:50%;background:#fff;object-fit:contain;flex:none;display:inline-block;vertical-align:middle;}
   :root{
     --bg:#ffffff; --bg-tint:#f5faf8; --bg-tint-2:#eef6f2; --blue:#1e4e8c; --blue-deep:#133761;
     --green:#1f8a5f; --green-deep:#146a48; --amber:#f2a73b; --ink:#132436; --ink-soft:#4a5c6b; --line:#dfe7e4;
@@ -87,10 +88,12 @@
   input.invalid, select.invalid, textarea.invalid{ border-color:#d93025 !important; background:#fff5f4 !important; }
   .radio-row.invalid{ outline:2px solid #d93025; outline-offset:5px; border-radius:10px; }
 </style>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
 <div class="topbar">
-  <a href="index.html" class="brand"><span class="mark">BC</span> Bridge to China</a>
+  <a href="index.html" class="brand"><img class="btc-logo" src="logo.png" alt="" width="34" height="34"> Bridge to China</a>
   <div class="who">Logged in as <b id="whoEmail">—</b> &nbsp;·&nbsp; <a href="#" id="logoutLink">Log Out · 退出</a></div>
 </div>
 <div class="wrap" id="appWrap"></div>
@@ -296,6 +299,7 @@
         <li>Do not record or share lessons without permission. <br><span style="color:var(--ink-soft)">未经允许，请勿录制或分享课程内容。</span></li>
         <li>If anything makes you uncomfortable, tell a parent/guardian or our team right away. <br><span style="color:var(--ink-soft)">如果有任何让你感到不舒服的事，请立刻告诉家长/监护人或我们的团队。</span></li>
       </ol>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin:14px 0 0;">${bi('Please also read our','请同时阅读我们的')} <a href="zh/terms.html" target="_blank" rel="noopener">使用条款</a> · <a href="zh/privacy.html" target="_blank" rel="noopener">隐私政策</a>。</p>
       <label class="consent-row"><input type="checkbox" id="c_rules" ${app.consent_rules ? 'checked' : ''}><span>I have read these rules and I agree to follow them. · 我已阅读并同意遵守这些规则。</span></label>
       ${minor ? `<label class="consent-row"><input type="checkbox" id="c_guardian" ${app.consent_guardian ? 'checked' : ''}><span>My parent/guardian knows about this program and agrees to me taking part. · 我的家长/监护人了解本项目并同意我参加。</span></label>
       <div class="help">Our team may email your guardian to confirm. · 我们的团队可能会发邮件向你的监护人确认。</div>` : ''}
